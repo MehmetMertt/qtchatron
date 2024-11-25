@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 
 #include <communicator.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +19,7 @@ int main(int argc, char *argv[])
 
     Communicator communicator;
     communicator.connectToServer("127.0.0.1", 45000);
+
 
 
     return app.exec();

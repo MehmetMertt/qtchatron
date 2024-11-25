@@ -17,9 +17,9 @@ Server::Server(QObject *parent) : QObject(parent)
     }
 
     // Start the TCP server to listen for new connections
-    connect(&_sslServer, &QSslServer::newConnection, this, &Server::onNewConnection);
+    connect(&_tcpServer, &QTcpServer::newConnection, this, &Server::onNewConnection);
 
-    if (_sslServer.listen(QHostAddress::Any, 45000)) {
+    if (_tcpServer.listen(QHostAddress::Any, 45000)) {
         qInfo() << "Server listening on port 45000...";
     } else {
         qWarning() << "Failed to start server!";
@@ -69,37 +69,42 @@ void Server::sendMessage(const QString &message)
 
 void Server::onNewConnection()
 {
-    // Accept the new TCP connection
-    QTcpSocket *client = _sslServer.nextPendingConnection();
-    if (client == nullptr) {
+    const auto client = _tcpServer.nextPendingConnection();
+    if(client == nullptr) {
+        qInfo() << "client failure.\n";
         return;
     }
 
     qInfo() << "New client connected.";
 
-    // Upgrade the client connection to SSL
     QSslSocket *sslClient = new QSslSocket(this);
-    connect(sslClient, &QSslSocket::encrypted, this, &Server::onClientEncrypted);
-    connect(sslClient, &QSslSocket::disconnected, this, &Server::onClientDisconnected);
-
     sslClient->setProtocol(QSsl::TlsV1_3OrLater);
+    // Set the socket descriptor to the pending connection
     sslClient->setSocketDescriptor(client->socketDescriptor());
-    sslClient->startServerEncryption();  // Start SSL handshake
 
-    _clients.insert(getClientKey(sslClient), sslClient);
+    // Start the SSL handshake
+    sslClient->startServerEncryption();
+    connect(sslClient, &QSslSocket::encrypted, this, &Server::onClientEncrypted);
+    _clients.insert(this->getClientKey(sslClient), sslClient);
 
-    connect(sslClient, &QSslSocket::readyRead, this, &Server::onReadyRead);
+    connect(sslClient, &QTcpSocket::readyRead, this, &Server::onReadyRead);
+    connect(sslClient, &QTcpSocket::disconnected, this, &Server::onClientDisconnected);
 }
 
 void Server::onReadyRead()
 {
+    qDebug() << "1\n";
     const auto client = qobject_cast<QSslSocket*>(sender());
+    qDebug() << "2\n";
 
     if(client == nullptr) {
+        qDebug() << "client failure\n";
         return;
     }
 
     const auto message = this->getClientKey(client).toUtf8() + ": " + client->readAll();
+
+    qDebug() << "message: " << message << "\n";
 
     emit newMessage(message);
 }
@@ -139,3 +144,27 @@ QString Server::getClientKey(const QSslSocket *client) const
 {
     return client->peerAddress().toString().append(":").append(QString::number(client->peerPort()));
 }
+
+void Server::printClients()
+{
+    qInfo() << "Printing list of connected clients:";
+
+    for (auto it = _clients.begin(); it != _clients.end(); ++it) {
+        QString clientKey = it.key();               // Key (client identifier)
+        QSslSocket *clientSocket = it.value();      // Value (QSslSocket pointer)
+
+        if (clientSocket) {
+            qInfo() << "Client Key:" << clientKey
+                    << ", Peer Address:" << clientSocket->peerAddress().toString()
+                    << ", Peer Port:" << clientSocket->peerPort()
+                    << ", State:" << clientSocket->state();
+        } else {
+            qWarning() << "Null QSslSocket for client key:" << clientKey;
+        }
+    }
+}
+/*
+void Server::onClientEncrypted() {
+    qInfo() << "SSL handshake completed successfully.";
+}
+*/

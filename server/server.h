@@ -18,6 +18,7 @@ signals:
 
 public slots:
     void sendMessage(const QString &message);
+    void printClients();
 
 private slots:
     void onNewConnection();           // Handle new TCP connection and upgrade to SSL
@@ -31,7 +32,7 @@ private:
     QString getClientKey(const QSslSocket *client) const;  // Generate unique client key
 
 private:
-    QSslServer _sslServer;            // TCP server to listen for incoming connections
+    QTcpServer _tcpServer;            // TCP server to listen for incoming connections
     QHash<QString, QSslSocket*> _clients;  // Map of connected clients (SSL sockets)
     QSslSocket _sslSocket;               // SSL socket for the server
 };
