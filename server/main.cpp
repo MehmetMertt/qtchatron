@@ -3,10 +3,12 @@
 
 #include <server.h>
 
+
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
 
+    QGuiApplication app(argc, argv);
+/*
 
 
     QQmlApplicationEngine engine;
@@ -18,7 +20,11 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
     engine.loadFromModule("appserver", "Main");
 
+*/
+
     Server server;
+    server.start();
+
 
     return app.exec();
 }

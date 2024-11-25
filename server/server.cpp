@@ -1,170 +1,211 @@
 #include "server.h"
-#include <QSslKey>
-#include <QSslCertificate>
-#include <QFile>
-#include <QHostAddress>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QSslConfiguration>
-#include <QDir>
 
-Server::Server(QObject *parent) : QObject(parent)
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
+
+Server::Server(QObject *parent)
+    : QTcpServer(parent)
 {
-    // Load SSL certificates and private keys for the server
-    if (!loadSslCertificate()) {
-        qWarning() << "Failed to load SSL certificate!";
+    setSslLocalCertificate("server.crt");
+    setSslPrivateKey("server.key");
+    setSslProtocol(QSsl::TlsV1_3OrLater);
+}
+
+void Server::start() {
+    QHostAddress address = QHostAddress::Any;
+    quint16 port = 45000;
+
+    connect(this, &QTcpServer::newConnection, this, &Server::onNewConnection);
+
+    if (this->listen(address, port))
+        qDebug().nospace() << "Now listening on " << qPrintable(address.toString()) << ":" << port;
+    else
+        qDebug().nospace() << "ERROR: could not bind to " << qPrintable(address.toString()) << ":" << port;
+}
+
+void Server::onNewConnection() {
+    // This method will get called every time a client tries to connect.
+    // We create an object that will take care of the communication with this client
+    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this->nextPendingConnection());
+
+    if (!sslSocket) {
+        qDebug() << "Error: Failed to cast QTcpSocket to QSslSocket";
         return;
     }
 
-    // Start the TCP server to listen for new connections
-    connect(&_tcpServer, &QTcpServer::newConnection, this, &Server::onNewConnection);
+    ServerWorker *worker = new ServerWorker(sslSocket, this);
 
-    if (_tcpServer.listen(QHostAddress::Any, 45000)) {
-        qInfo() << "Server listening on port 45000...";
-    } else {
-        qWarning() << "Failed to start server!";
+    // connect the signals coming from the object that will take care of the
+    // communication with this client to the slots in the central server
+    connect(worker, &ServerWorker::disconnectedFromClient, this, std::bind(&Server::userDisconnected, this, worker));
+    connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
+    connect(worker, &ServerWorker::jsonReceived, this, std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
+    connect(worker, &ServerWorker::logMessage, this, &Server::logMessage);
+    // we append the new worker to a list of all the objects that communicate to a single client
+    m_clients.append(worker);
+    // we log the event
+    emit logMessage(QStringLiteral("New client Connected"));
+    qDebug() << "New client connected";
+}
+
+void Server::incomingConnection(qintptr socketDescriptor)
+{
+    QSslSocket *sslSocket = new QSslSocket(this);
+    sslSocket->setSocketDescriptor(socketDescriptor);
+    sslSocket->setLocalCertificate(m_sslLocalCertificate);
+    sslSocket->setPrivateKey(m_sslPrivateKey);
+    sslSocket->setProtocol(m_sslProtocol);
+    sslSocket->startServerEncryption();
+
+    this->addPendingConnection(sslSocket);
+}
+
+void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
+{
+    Q_ASSERT(destination);
+    destination->sendJson(message);
+}
+void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
+{
+    for (ServerWorker *worker : m_clients) {
+        Q_ASSERT(worker);
+        if (worker == exclude)
+            continue;
+        sendJson(worker, message);
     }
 }
 
-bool Server::loadSslCertificate()
+void Server::jsonReceived(ServerWorker *sender, const QJsonObject &doc)
 {
-    QDir resourceDir(":/");
-    qDebug() << "Resource directory contents:" << resourceDir.entryList();
+    Q_ASSERT(sender);
+    emit logMessage(QLatin1String("JSON received ") + QString::fromUtf8(QJsonDocument(doc).toJson()));
+    if (sender->userName().isEmpty())
+        return jsonFromLoggedOut(sender, doc);
+    jsonFromLoggedIn(sender, doc);
+}
 
-    // Load server certificate and private key
-    // !!!! This certificate is only for development !!!!!
-    QFile certFile("../certs/server.crt");
-    QFile keyFile("../certs/server.key");
-
-    if (!certFile.open(QIODevice::ReadOnly) || !keyFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Error loading certificate or key file.";
-        return false;
+void Server::userDisconnected(ServerWorker *sender)
+{
+    m_clients.removeAll(sender);
+    const QString userName = sender->userName();
+    if (!userName.isEmpty()) {
+        QJsonObject disconnectedMessage;
+        disconnectedMessage[QStringLiteral("type")] = QStringLiteral("userdisconnected");
+        disconnectedMessage[QStringLiteral("username")] = userName;
+        broadcast(disconnectedMessage, nullptr);
+        emit logMessage(userName + QLatin1String(" disconnected"));
     }
+    sender->deleteLater();
+}
 
-    QSslCertificate cert(&certFile, QSsl::Pem);
-    QSslKey key(&keyFile, QSsl::Rsa);
+void Server::userError(ServerWorker *sender)
+{
+    Q_UNUSED(sender)
+    emit logMessage(QLatin1String("Error from ") + sender->userName());
+}
 
-    qDebug() << cert << "\n" << key << "\n";
-
-    if (cert.isNull() || key.isNull()) {
-        qWarning() << "Error parsing certificate or key.";
-        return false;
+void Server::stopServer()
+{
+    for (ServerWorker *worker : m_clients) {
+        worker->disconnectFromClient();
     }
+    close();
+}
 
-    // Set the certificate and private key to the server
-    _sslSocket.setLocalCertificate(cert);
-    _sslSocket.setPrivateKey(key);
+void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
+{
+    Q_ASSERT(sender);
+    const QJsonValue typeVal = docObj.value(QLatin1String("type"));
+    if (typeVal.isNull() || !typeVal.isString())
+        return;
+    if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) != 0)
+        return;
+    const QJsonValue usernameVal = docObj.value(QLatin1String("username"));
+    if (usernameVal.isNull() || !usernameVal.isString())
+        return;
+    const QString newUserName = usernameVal.toString().simplified();
+    if (newUserName.isEmpty())
+        return;
+    for (ServerWorker *worker : std::as_const(m_clients)) {
+        if (worker == sender)
+            continue;
+        if (worker->userName().compare(newUserName, Qt::CaseInsensitive) == 0) {
+            QJsonObject message;
+            message[QStringLiteral("type")] = QStringLiteral("login");
+            message[QStringLiteral("success")] = false;
+            message[QStringLiteral("reason")] = QStringLiteral("duplicate username");
+            sendJson(sender, message);
+            return;
+        }
+    }
+    sender->setUserName(newUserName);
+    QJsonObject successMessage;
+    successMessage[QStringLiteral("type")] = QStringLiteral("login");
+    successMessage[QStringLiteral("success")] = true;
+    sendJson(sender, successMessage);
+    QJsonObject connectedMessage;
+    connectedMessage[QStringLiteral("type")] = QStringLiteral("newuser");
+    connectedMessage[QStringLiteral("username")] = newUserName;
+    broadcast(connectedMessage, sender);
+}
 
-    // Set the SSL mode to server
-    _sslSocket.setPeerVerifyMode(QSslSocket::VerifyNone);
-    _sslSocket.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
+{
+    Q_ASSERT(sender);
+    const QJsonValue typeVal = docObj.value(QLatin1String("type"));
+    if (typeVal.isNull() || !typeVal.isString())
+        return;
+    if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) != 0)
+        return;
+    const QJsonValue textVal = docObj.value(QLatin1String("text"));
+    if (textVal.isNull() || !textVal.isString())
+        return;
+    const QString text = textVal.toString().trimmed();
+    if (text.isEmpty())
+        return;
+    QJsonObject message;
+    message[QStringLiteral("type")] = QStringLiteral("message");
+    message[QStringLiteral("text")] = text;
+    message[QStringLiteral("sender")] = sender->userName();
+    broadcast(message, sender);
+}
 
+void Server::setSslLocalCertificate(const QSslCertificate &certificate)
+{
+    m_sslLocalCertificate = certificate;
+}
+
+bool Server::setSslLocalCertificate(const QString &path, QSsl::EncodingFormat format)
+{
+    QFile certificateFile("../certs/"+path);
+
+    if (!certificateFile.open(QIODevice::ReadOnly))
+        return false;
+
+    m_sslLocalCertificate = QSslCertificate(certificateFile.readAll(), format);
     return true;
 }
 
-void Server::sendMessage(const QString &message)
+
+void Server::setSslPrivateKey(const QSslKey &key)
 {
-    emit newMessage("Server: " + message.toUtf8());
+    m_sslPrivateKey = key;
 }
 
-void Server::onNewConnection()
+bool Server::setSslPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algorithm, QSsl::EncodingFormat format, const QByteArray &passPhrase)
 {
-    const auto client = _tcpServer.nextPendingConnection();
-    if(client == nullptr) {
-        qInfo() << "client failure.\n";
-        return;
-    }
+    QFile keyFile("../certs/"+fileName);
 
-    qInfo() << "New client connected.";
+    if (!keyFile.open(QIODevice::ReadOnly))
+        return false;
 
-    QSslSocket *sslClient = new QSslSocket(this);
-    sslClient->setProtocol(QSsl::TlsV1_3OrLater);
-    // Set the socket descriptor to the pending connection
-    sslClient->setSocketDescriptor(client->socketDescriptor());
-
-    // Start the SSL handshake
-    sslClient->startServerEncryption();
-    connect(sslClient, &QSslSocket::encrypted, this, &Server::onClientEncrypted);
-    _clients.insert(this->getClientKey(sslClient), sslClient);
-
-    connect(sslClient, &QTcpSocket::readyRead, this, &Server::onReadyRead);
-    connect(sslClient, &QTcpSocket::disconnected, this, &Server::onClientDisconnected);
+    m_sslPrivateKey = QSslKey(keyFile.readAll(), algorithm, format, QSsl::PrivateKey, passPhrase);
+    return true;
 }
 
-void Server::onReadyRead()
+
+void Server::setSslProtocol(QSsl::SslProtocol protocol)
 {
-    qDebug() << "1\n";
-    const auto client = qobject_cast<QSslSocket*>(sender());
-    qDebug() << "2\n";
-
-    if(client == nullptr) {
-        qDebug() << "client failure\n";
-        return;
-    }
-
-    const auto message = this->getClientKey(client).toUtf8() + ": " + client->readAll();
-
-    qDebug() << "message: " << message << "\n";
-
-    emit newMessage(message);
+    m_sslProtocol = protocol;
 }
-
-void Server::onClientEncrypted()
-{
-    const auto client = qobject_cast<QSslSocket*>(sender());
-
-    if (client == nullptr) {
-        return;
-    }
-
-    qInfo() << "SSL connection established with" << getClientKey(client);
-}
-
-void Server::onClientDisconnected()
-{
-    const auto client = qobject_cast<QSslSocket*>(sender());
-
-    if(client == nullptr) {
-        return;
-    }
-
-    qInfo() << "Client disconnected:" << getClientKey(client);
-    _clients.remove(getClientKey(client));
-}
-
-void Server::onNewMessage(const QByteArray &ba)
-{
-    for (const auto &client : std::as_const(_clients)) {
-        client->write(ba);
-        client->flush();
-    }
-}
-
-QString Server::getClientKey(const QSslSocket *client) const
-{
-    return client->peerAddress().toString().append(":").append(QString::number(client->peerPort()));
-}
-
-void Server::printClients()
-{
-    qInfo() << "Printing list of connected clients:";
-
-    for (auto it = _clients.begin(); it != _clients.end(); ++it) {
-        QString clientKey = it.key();               // Key (client identifier)
-        QSslSocket *clientSocket = it.value();      // Value (QSslSocket pointer)
-
-        if (clientSocket) {
-            qInfo() << "Client Key:" << clientKey
-                    << ", Peer Address:" << clientSocket->peerAddress().toString()
-                    << ", Peer Port:" << clientSocket->peerPort()
-                    << ", State:" << clientSocket->state();
-        } else {
-            qWarning() << "Null QSslSocket for client key:" << clientKey;
-        }
-    }
-}
-/*
-void Server::onClientEncrypted() {
-    qInfo() << "SSL handshake completed successfully.";
-}
-*/

@@ -20,8 +20,20 @@ qt_add_qml_module(appserver
     QML_FILES
         Main.qml
     SOURCES
+
+
+
+
+
+
+
+
+        serverworker.h
+        serverworker.cpp
         server.h
         server.cpp
+        commandrouter.h
+        commandrouter.cpp
     RESOURCES
         certs/server.crt
         certs/server.key

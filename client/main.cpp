@@ -1,8 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-#include <communicator.h>
-#include <unistd.h>
+
+#include  <chatclient.h>
 
 int main(int argc, char *argv[])
 {
@@ -17,10 +17,11 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
     engine.loadFromModule("appclient", "Main");
 
-    Communicator communicator;
-    communicator.connectToServer("127.0.0.1", 45000);
+    ChatClient client;
 
+    client.connectToServer("127.0.0.1", 45000);
 
+    client.sendMessage("Hello", "login");
 
     return app.exec();
 }
