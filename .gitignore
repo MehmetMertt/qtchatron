@@ -1,1 +1,4 @@
+server/build/
+client/build/
+client/client/build
 build/
