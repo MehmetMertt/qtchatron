@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include <communicator.h>
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -12,7 +14,11 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("client", "Main");
+    engine.loadFromModule("appclient", "Main");
+
+    Communicator communicator;
+    communicator.connectToServer("127.0.0.1", 45000);
+
 
     return app.exec();
 }
