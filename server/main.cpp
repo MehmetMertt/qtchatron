@@ -1,9 +1,13 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include <server.h>
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+
 
     QQmlApplicationEngine engine;
     QObject::connect(
@@ -12,7 +16,9 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("qt-athon-communicator", "Main");
+    engine.loadFromModule("appserver", "Main");
+
+    Server server;
 
     return app.exec();
 }

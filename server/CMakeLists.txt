@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(server VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
@@ -17,6 +19,13 @@ qt_add_qml_module(appserver
     VERSION 1.0
     QML_FILES
         Main.qml
+    SOURCES
+        server.h
+        server.cpp
+    RESOURCES
+        certs/server.crt
+        certs/server.key
+
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -28,6 +37,7 @@ set_target_properties(appserver PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
 
 target_link_libraries(appserver
