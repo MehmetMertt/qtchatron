@@ -1,26 +1,13 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <QCoreApplication>
 
-#include <server.h>
+#include <Server/Server.h>
 
 
 int main(int argc, char *argv[])
 {
 
-    QGuiApplication app(argc, argv);
-/*
+    QCoreApplication app(argc, argv);
 
-
-    QQmlApplicationEngine engine;
-    QObject::connect(
-        &engine,
-        &QQmlApplicationEngine::objectCreationFailed,
-        &app,
-        []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
-    engine.loadFromModule("appserver", "Main");
-
-*/
 
     Server server;
     server.start();

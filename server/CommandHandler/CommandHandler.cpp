@@ -1,10 +1,10 @@
-#include "CommandRouter.h"
+#include "CommandHandler/CommandHandler.h"
 
 #include <QJsonObject>
 
-CommandRouter::CommandRouter(QObject* parent) : QObject(parent) {}
+CommandHandler::CommandHandler(QObject* parent) : QObject(parent) {}
 
-QJsonObject CommandRouter::routeCommand(const QJsonObject& jsonObj)
+QJsonObject CommandHandler::routeCommand(const QJsonObject& jsonObj)
 {
     QJsonObject response;
     response[QStringLiteral("type")] = QStringLiteral("message");

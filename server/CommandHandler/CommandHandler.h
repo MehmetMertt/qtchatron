@@ -1,15 +1,15 @@
-#ifndef COMMANDROUTER_H
-#define COMMANDROUTER_H
+#ifndef COMMANDHANDLER_H
+#define COMMANDHANDLER_H
 
 #include <QJsonObject>
 #include <QObject>
 
-class CommandRouter : public QObject
+class CommandHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    CommandRouter(QObject* parent = nullptr);
+    CommandHandler(QObject* parent = nullptr);
 
     QJsonObject routeCommand(const QJsonObject& jsonObj);
 
@@ -18,4 +18,4 @@ signals:
     void logMessage(const QString& message);
 };
 
-#endif // COMMANDROUTER_H
+#endif // COMMANDHANDLER_H

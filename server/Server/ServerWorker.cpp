@@ -1,4 +1,4 @@
-#include "serverworker.h"
+#include "Server/ServerWorker.h"
 
 #include <QOverload>
 #include <QAbstractSocket>
@@ -7,36 +7,26 @@
 
 ServerWorker::ServerWorker(QSslSocket *socket, QObject *parent)
     : QObject(parent)
-    , m_serverSocket(socket)
+    , _serverSocket(socket)
 {
-    // connect readyRead() to the slot that will take care of reading the data in
-    connect(m_serverSocket, &QTcpSocket::readyRead, this, &ServerWorker::receiveJson);
-    // forward the disconnected and error signals coming from the socket
-    connect(m_serverSocket, &QSslSocket::disconnected, this, &ServerWorker::disconnectedFromClient);
-    connect(m_serverSocket, &QAbstractSocket::errorOccurred, this, &ServerWorker::error);
+    connect(_serverSocket, &QTcpSocket::readyRead, this, &ServerWorker::receiveJson);
+    connect(_serverSocket, &QSslSocket::disconnected, this, &ServerWorker::disconnectedFromClient);
+    connect(_serverSocket, &QAbstractSocket::errorOccurred, this, &ServerWorker::error);
 }
 
 void ServerWorker::disconnectFromClient()
 {
-    m_serverSocket->disconnectFromHost();
+    _serverSocket->disconnectFromHost();
 }
 
-QString ServerWorker::userName() const
-{
-    return m_userName;
-}
 
-void ServerWorker::setUserName(const QString &userName)
-{
-    m_userName = userName;
-}
-
+// https://wiki.qt.io/WIP-How_to_create_a_simple_chat_application#The_Single_Thread_Server
 void ServerWorker::receiveJson()
 {
     // prepare a container to hold the UTF-8 encoded JSON we receive from the socket
     QByteArray jsonData;
     // create a QDataStream operating on the socket
-    QDataStream socketStream(m_serverSocket);
+    QDataStream socketStream(_serverSocket);
     // set the version so that programs compiled with different versions of Qt can agree on how to serialise
     socketStream.setVersion(QDataStream::Qt_6_8);
     // start an infinite loop
@@ -56,7 +46,6 @@ void ServerWorker::receiveJson()
                 if (jsonDoc.isObject()){ // and is a JSON object
                     QJsonObject jsonObj = jsonDoc.object();
                     qDebug() << "json received: " << jsonDoc.object();
-                    sendJson(m_commandRouter->routeCommand(jsonObj));
                     emit jsonReceived(jsonDoc.object()); // send the message to the central server
                 }
                 else {
@@ -80,9 +69,9 @@ void ServerWorker::sendJson(const QJsonObject &json)
     // to its UTF-8 encoded version. We use QJsonDocument::Compact to save bandwidth
     const QByteArray jsonData = QJsonDocument(json).toJson(QJsonDocument::Compact);
     // we notify the central server we are about to send the message
-    emit logMessage("Sending to " + userName() + " - " + QString::fromUtf8(jsonData));
+    emit logMessage("Sending: " + QString::fromUtf8(jsonData));
     // we send the message to the socket in the exact same way we did in the client
-    QDataStream socketStream(m_serverSocket);
+    QDataStream socketStream(_serverSocket);
     socketStream.setVersion(QDataStream::Qt_6_8);
     socketStream << jsonData;
     qDebug() << "message send to client";

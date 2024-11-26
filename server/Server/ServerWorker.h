@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QSslSocket>
-#include <commandrouter.h>
 
 class ServerWorker : public QObject
 {
@@ -11,8 +10,6 @@ class ServerWorker : public QObject
     Q_DISABLE_COPY(ServerWorker)
 public:
     explicit ServerWorker(QSslSocket *socket, QObject *parent = nullptr);
-    QString userName() const;
-    void setUserName(const QString &userName);
     void sendJson(const QJsonObject &jsonData);
 signals:
     void jsonReceived(const QJsonObject &jsonDoc);
@@ -24,9 +21,7 @@ public slots:
 private slots:
     void receiveJson();
 private:
-    QSslSocket *m_serverSocket;
-    QString m_userName;
-    CommandRouter* m_commandRouter = new CommandRouter();
+    QSslSocket *_serverSocket;
 };
 
 #endif // SERVERWORKER_H
