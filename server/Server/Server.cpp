@@ -119,8 +119,10 @@ bool Server::setSslPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algori
 {
     QFile keyFile("../certs/"+fileName);
 
-    if (!keyFile.open(QIODevice::ReadOnly))
+       if (!keyFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open private key file:" << fileName;
         return false;
+    }
 
     _sslPrivateKey = QSslKey(keyFile.readAll(), algorithm, format, QSsl::PrivateKey, passPhrase);
     return true;
