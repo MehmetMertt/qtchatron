@@ -1,8 +1,15 @@
 import QtQuick 6.8
 import QtQuick.Controls 6.8
 
+import "../components/utils"
+
 Page {
     id: mainPage
+    visible: true
+    width: parent.width
+    height: parent.height
+
+
     // Sidebar
     Rectangle {
         id: sidebar
