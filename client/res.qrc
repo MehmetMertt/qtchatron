@@ -8,5 +8,7 @@
         <file>view/components/utils/CustomBorder.qml</file>
         <file>view/qtquickcontrols2.conf</file>
         <file>view/styles/Style.qml</file>
+        <file>config/config.json</file>
+        <file>certs/server.crt</file>
     </qresource>
 </RCC>

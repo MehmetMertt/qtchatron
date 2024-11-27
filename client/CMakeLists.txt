@@ -24,13 +24,7 @@ qt_add_qml_module(appclient
     SOURCES
         Communicator/Communicator.h
         Communicator/Communicator.cpp
-    RESOURCES qml.qrc
-        certs/client.crt
-        certs/client.key
-        certs/sslserver.pem
-        certs/server.crt
-        config/config.json
-
+        RESOURCES res.qrc
 )
 
 

@@ -134,7 +134,7 @@ void Communicator::onReadyRead()
 
 bool Communicator::setSslCaCertificate(const QString &path, QSsl::EncodingFormat format)
 {
-    QFile certificateFile("../certs/"+path);
+    QFile certificateFile(":/certs/"+path);
 
     if (!certificateFile.open(QIODevice::ReadOnly))
         qWarning() << "Failed to open certificate file:" << path;

@@ -38,7 +38,7 @@ QPair<QString, quint16> loadConfiguration() {
     QString defaultServerIP = "127.0.0.1";
     quint16 defaultServerPort = 45000;
 
-    QFile configFile("../config/config.json");
+    QFile configFile(":/config/config.json");
     if (!configFile.open(QIODevice::ReadOnly)) {
         qWarning() << "Could not open config file.";
         return QPair<QString, quint16>(defaultServerIP, defaultServerPort); // Default values
