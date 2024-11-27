@@ -6,13 +6,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick QuickControls2)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Quick Qml QuickControls2)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(AUTORCC_OPTIONS "/qml.qrc")
 
-qt_standard_project_setup(REQUIRES 6.5)
+qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appclient
     main.cpp
@@ -24,7 +24,10 @@ qt_add_qml_module(appclient
     SOURCES
         Communicator/Communicator.h
         Communicator/Communicator.cpp
+        client.h client.cpp
+        clientmanager.h clientmanager.cpp
         RESOURCES res.qrc
+
 )
 
 

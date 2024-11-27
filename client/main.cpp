@@ -4,10 +4,9 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-
-#include  <Communicator/Communicator.h>
-
-QPair<QString, quint16> loadConfiguration();
+#include <QQmlContext>
+//#include <client.h>
+#include <clientmanager.h>
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +17,9 @@ int main(int argc, char *argv[])
     const QUrl url(QStringLiteral("qrc:/view/Main.qml"));
 
     QQmlApplicationEngine engine;
+    ClientManager *clientManager = new ClientManager(&engine);
+    engine.rootContext()->setContextProperty("ClientManager", clientManager);
+
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
@@ -25,34 +27,13 @@ int main(int argc, char *argv[])
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 
+    //qmlRegisterType<Client>("/client", 1, 0, "Client");
+    //engine.rootContext()->setContextObject(client);
     engine.load(url);
 
-    Communicator client;
-    auto [address, port] = loadConfiguration();
-    client.connectToServer(address, port);
+    // show loading screen
+    // ...
+    // show main page
 
     return app.exec();
-}
-
-QPair<QString, quint16> loadConfiguration() {
-    QString defaultServerIP = "127.0.0.1";
-    quint16 defaultServerPort = 45000;
-
-    QFile configFile(":/config/config.json");
-    if (!configFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open config file.";
-        return QPair<QString, quint16>(defaultServerIP, defaultServerPort); // Default values
-    }
-
-    QByteArray data = configFile.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-
-    QJsonObject config = doc.object();
-
-    QString address = config["serverAddress"].toString(defaultServerIP);
-    quint16 port = static_cast<quint16>(config["port"].toInt(defaultServerPort));
-
-    qDebug() << address << ": " << port;
-
-    return QPair<QString, quint16>(address, port);
 }

@@ -8,6 +8,8 @@
 #include <QSslConfiguration>
 #include <QFile>
 
+#include "unistd.h"
+
 Communicator::Communicator(QObject *parent)
     : QObject(parent)
     , _clientSocket(new QSslSocket(this))
@@ -30,6 +32,7 @@ void Communicator::connectToServer(const QString &address, quint16 port)
     sslConfig.addCaCertificate(_sslCaCertificate);
     _clientSocket->setSslConfiguration(sslConfig);
     _clientSocket->setProtocol(_sslProtocol);
+    _clientSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
 
     qDebug() << "connecting ...";
     _clientSocket->connectToHostEncrypted(address, port);
@@ -46,6 +49,8 @@ void Communicator::onConnected() {
 void Communicator::onEncrypted() {
     qDebug() << "Encrypted connection established";
     sendMessage("Hello from Client", "hello");
+    sleep(3);
+    emit encrypted();
 }
 
 void Communicator::disconnectFromHost()
