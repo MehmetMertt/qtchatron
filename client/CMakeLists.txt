@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(client VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick QuickControls2)
@@ -20,7 +22,14 @@ qt_add_qml_module(appclient
     URI appclient
     VERSION 1.0
     SOURCES
+        Communicator/Communicator.h
+        Communicator/Communicator.cpp
     RESOURCES qml.qrc
+        certs/client.crt
+        certs/client.key
+        certs/sslserver.pem
+        certs/server.crt
+        config/config.json
 
 )
 
@@ -34,6 +43,7 @@ set_target_properties(appclient PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
 
 target_link_libraries(appclient

@@ -2,3 +2,5 @@ server/build/
 client/build/
 client/client/build
 build/
+/server/bin
+/client/bin
