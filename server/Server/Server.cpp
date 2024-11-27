@@ -110,7 +110,7 @@ bool Server::setSslLocalCertificate(const QString &path, QSsl::EncodingFormat fo
         return false;
 
     _sslLocalCertificate = QSslCertificate(certificateFile.readAll(), format);
-    return true;
+    return !_sslLocalCertificate.isNull();
 }
 
 bool Server::setSslPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algorithm, QSsl::EncodingFormat format, const QByteArray &passPhrase)

@@ -29,18 +29,23 @@ int main(int argc, char *argv[])
 }
 
 QPair<QString, quint16> loadConfiguration() {
-    QFile configFile("config.json");
+    QString defaultServerIP = "127.0.0.1";
+    quint16 defaultServerPort = 45000;
+
+    QFile configFile("../config/config.json");
     if (!configFile.open(QIODevice::ReadOnly)) {
         qWarning() << "Could not open config file.";
-        return QPair<QString, quint16>("127.0.0.1", 45000); // Default values
+        return QPair<QString, quint16>(defaultServerIP, defaultServerPort); // Default values
     }
 
     QByteArray data = configFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(data));
+    QJsonDocument doc = QJsonDocument::fromJson(data);
     QJsonObject config = doc.object();
 
-    QString address = config["serverAddress"].toString("127.0.0.1");
-    quint16 port = static_cast<quint16>(config["port"].toInt(45000));
+    QString address = config["serverAddress"].toString(defaultServerIP);
+    quint16 port = static_cast<quint16>(config["port"].toInt(defaultServerPort));
+
+    qDebug() << address << ": " << port;
 
     return QPair<QString, quint16>(address, port);
 }

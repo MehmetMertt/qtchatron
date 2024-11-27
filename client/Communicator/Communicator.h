@@ -34,7 +34,7 @@ private:
 
     void jsonReceived(const QJsonObject &doc);
     void onConnected();
-    void onEncrypthed();
+    void onEncrypted();
     bool setSslCaCertificate(const QString &path, QSsl::EncodingFormat format = QSsl::Pem);
     void setSslProtocol(QSsl::SslProtocol protocol);
 };

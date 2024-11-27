@@ -15,7 +15,7 @@ Communicator::Communicator(QObject *parent)
     setSslCaCertificate("server.crt");
     setSslProtocol(QSsl::TlsV1_3OrLater);
 
-    connect(_clientSocket, &QSslSocket::encrypted, this, &Communicator::onEncrypthed);
+    connect(_clientSocket, &QSslSocket::encrypted, this, &Communicator::onEncrypted);
     connect(_clientSocket, &QTcpSocket::connected, this, &Communicator::onConnected);
     connect(_clientSocket, &QTcpSocket::disconnected, this, &Communicator::disconnected);
     connect(_clientSocket, &QTcpSocket::readyRead, this, &Communicator::onReadyRead);
@@ -43,7 +43,7 @@ void Communicator::onConnected() {
 
 }
 
-void Communicator::onEncrypthed() {
+void Communicator::onEncrypted() {
     qDebug() << "Encrypted connection established";
     sendMessage("Hello from Client", "hello");
 }
@@ -119,10 +119,9 @@ void Communicator::onReadyRead()
             QJsonParseError parseError;
             // we try to create a json document with the data we received
             const QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
-            if (parseError.error == QJsonParseError::NoError) {
-                // if the data was indeed valid JSON
-                if (jsonDoc.isObject()) // and is a JSON object
-                    jsonReceived(jsonDoc.object()); // parse the JSON
+            if (parseError.error == QJsonParseError::NoError && jsonDoc.isObject()) {
+                // if the data was indeed valid JSON and is a JSON object
+                jsonReceived(jsonDoc.object()); // parse the JSON
             }
             // loop and try to read more JSONs if they are available
         } else {
@@ -138,6 +137,7 @@ bool Communicator::setSslCaCertificate(const QString &path, QSsl::EncodingFormat
     QFile certificateFile("../certs/"+path);
 
     if (!certificateFile.open(QIODevice::ReadOnly))
+        qWarning() << "Failed to open certificate file:" << path;
         return false;
 
     _sslCaCertificate = QSslCertificate(certificateFile.readAll(), format);
