@@ -18,6 +18,10 @@ public:
     QJsonObject routeCommand(const QJsonObject& jsonObj);
 
 signals:
+   /**
+     * @brief Emitted when a JSON response is generated.
+     * @param response The JSON object containing the response.
+     */
     void jsonResponse(const QJsonObject& response);
     
         /**
