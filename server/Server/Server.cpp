@@ -106,8 +106,10 @@ bool Server::setSslLocalCertificate(const QString &path, QSsl::EncodingFormat fo
 {
     QFile certificateFile("../certs/"+path);
 
-    if (!certificateFile.open(QIODevice::ReadOnly))
+    if (!certificateFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open certificate file:" << path;
         return false;
+    }
 
     _sslLocalCertificate = QSslCertificate(certificateFile.readAll(), format);
     return true;
