@@ -26,6 +26,7 @@ signals:
     void disconnected();
     void messageReceived(const QString &sender, const QString &text);
     void error(QAbstractSocket::SocketError socketError);
+    void encrypted();
 
 private:
     QSslSocket *_clientSocket;
