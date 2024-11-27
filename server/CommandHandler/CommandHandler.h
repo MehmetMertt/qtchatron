@@ -10,7 +10,11 @@ class CommandHandler : public QObject
 
 public:
     CommandHandler(QObject* parent = nullptr);
-
+    /**
+     * @brief Routes the incoming JSON command to the appropriate handler.
+     * @param jsonObj The JSON object containing the command.
+     * @return A JSON object containing the response.
+     */
     QJsonObject routeCommand(const QJsonObject& jsonObj);
 
 signals:
