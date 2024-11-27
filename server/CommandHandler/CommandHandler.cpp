@@ -16,7 +16,7 @@ QJsonObject CommandHandler::routeCommand(const QJsonObject& jsonObj)
         if (command == "hello") {
             // Respond with "hello"
 
-            response["text"] = "hello";
+            response[QStringLiteral("text")] = QStringLiteral("hello");
             emit jsonResponse(response);
         }
         else if (command == "login") {

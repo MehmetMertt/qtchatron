@@ -40,6 +40,7 @@ QPair<QString, quint16> loadConfiguration() {
 
     QByteArray data = configFile.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
+
     QJsonObject config = doc.object();
 
     QString address = config["serverAddress"].toString(defaultServerIP);

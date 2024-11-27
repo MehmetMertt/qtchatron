@@ -16,7 +16,9 @@ ServerWorker::ServerWorker(QSslSocket *socket, QObject *parent)
 
 void ServerWorker::disconnectFromClient()
 {
-    _serverSocket->disconnectFromHost();
+    if(_serverSocket->state() == QAbstractSocket::ConnectedState) {
+        _serverSocket->disconnectFromHost();
+    }
 }
 
 
