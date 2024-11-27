@@ -36,7 +36,14 @@ QPair<QString, quint16> loadConfiguration() {
     }
 
     QByteArray data = configFile.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(data));
+
+
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+
+        if (doc.isNull() || !doc.isObject()) {
+        qWarning() << "Invalid configuration file format. Using default configuration.";
+        return QPair<QString, quint16>("127.0.0.1", 45000); // Default values
+    }
     QJsonObject config = doc.object();
 
     QString address = config["serverAddress"].toString("127.0.0.1");
