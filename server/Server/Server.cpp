@@ -70,7 +70,7 @@ void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &doc)
 {
     Q_ASSERT(sender);
-    //emit logMessage(QLatin1String("JSON received ") + QString::fromUtf8(QJsonDocument(doc).toJson()));
+    //emit logMessage(QStringLiteral("JSON received ") + QString::fromUtf8(QJsonDocument(doc).toJson()));
 
     auto response = commandHandler.routeCommand(doc);
     sendJson(sender, response);
@@ -82,8 +82,8 @@ void Server::userDisconnected(ServerWorker *sender)
 
     QJsonObject disconnectedMessage;
     disconnectedMessage[QStringLiteral("type")] = QStringLiteral("userdisconnected");
-    emit logMessage(QLatin1String(" disconnected"));
-    qDebug() << QLatin1String(" disconnected");
+    emit logMessage(QStringLiteral(" disconnected"));
+    qDebug() << QStringLiteral(" disconnected");
 
     sender->deleteLater();
 }
@@ -91,7 +91,7 @@ void Server::userDisconnected(ServerWorker *sender)
 void Server::userError(ServerWorker *sender)
 {
     Q_UNUSED(sender)
-    emit logMessage(QLatin1String("Error from "));
+    emit logMessage(QStringLiteral("Error from "));
 }
 
 void Server::stopServer()
