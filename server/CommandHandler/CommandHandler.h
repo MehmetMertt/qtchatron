@@ -15,6 +15,11 @@ public:
 
 signals:
     void jsonResponse(const QJsonObject& response);
+    
+        /**
+     * @brief Emitted for logging messages.
+     * @param message The log message.
+     */
     void logMessage(const QString& message);
 };
 
