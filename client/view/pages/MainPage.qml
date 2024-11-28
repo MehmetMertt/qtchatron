@@ -1,5 +1,6 @@
 import QtQuick 6.8
 import QtQuick.Controls 6.8
+import QtQuick.Controls.Material 2.15
 
 import "../components/utils"
 
@@ -16,16 +17,7 @@ Page {
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        color: "#e0e3e6"  // Dark color for sidebar (like Discord)
-
-        Text {
-            text: "Sidebar"
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 20
-            font.bold: true
-            font.pixelSize: 20
-        }
+        color: Material.background  // Dark color for sidebar (like Discord)
 
         // Add sidebar content here (e.g., list of channels)
     }
@@ -40,13 +32,13 @@ Page {
 
         Rectangle {
             anchors.fill: parent
-            color: "#F2F3F5"  // Light gray background
+            color: Material.background  // Light gray background
 
             Text {
                 text: "Main Content Area"
                 anchors.centerIn: parent
                 font.pixelSize: 24
-                color: "#333333"
+                color: Material.primary
             }
         }
     }
@@ -58,7 +50,7 @@ Page {
         anchors.top: parent.top
         anchors.left: sidebar.right
         anchors.right: parent.right
-        color: "#F2F3F5"  // Discord's brand color (bluish)
+        color: Material.background
 
         CustomBorder
         {
@@ -67,7 +59,7 @@ Page {
             rBorderwidth: 0
             tBorderwidth: 0
             bBorderwidth: 1
-            borderColor: "#b0b2b5"
+            borderColor: Material.Grey
         }
 
         Text {

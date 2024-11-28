@@ -9,12 +9,13 @@ Page {
     id: loginPage
     title: "Login"
 
-    signal switchToSignup
+    AuthModel{id: authModel}
 
-    /*Router {
-        id: router
+    function setError(reason) {
+        errorMessage.visible = true
+        errorMessage.text = reason
     }
-*/
+
     Rectangle {
         anchors.fill: parent
         color: Material.background // Background color
@@ -34,7 +35,6 @@ Page {
             font.bold: true
             font.family: "Roboto"
             color: Material.foreground
-            horizontalAlignment: Text.AlignVCenter
             Layout.alignment: Qt.AlignHCenter
         }
 
@@ -44,7 +44,8 @@ Page {
             placeholderText: "Username"
             font.pixelSize: 18
             Layout.fillWidth: true
-
+            text: authModel.username
+            onTextChanged: authModel.username = text
         }
 
         // Password Field
@@ -54,6 +55,8 @@ Page {
             echoMode: TextInput.Password
             font.pixelSize: 18
             Layout.fillWidth: true
+            text: authModel.password
+            onTextChanged: authModel.password = text
         }
 
         Button {
@@ -76,7 +79,27 @@ Page {
             }
 
             onClicked: {
-                //AuthController.login()
+                authModel.login()
+            }
+        }
+
+        // Error Handling
+        Text {
+            id: errorMessage
+            visible: false
+            color: "red"
+            font.pixelSize: 14
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        Connections {
+            target: authModel
+            function onLoginSuccessful() {
+                console.log("Login successful!");
+                Router.setCurrentPage(1); // Navigate to MainPage
+            }
+            function onLoginFailed (reason) {
+                loginPage.setError(reason)
             }
         }
 

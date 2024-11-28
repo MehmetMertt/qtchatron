@@ -10,8 +10,12 @@ Item {
 
     signal switchToLogin
 
+    function setError(reason) {
+        errorMessage.visible = true
+        errorMessage.text = reason
+    }
 
-
+    AuthModel{id: authModel;}
 
     Rectangle {
         anchors.fill: parent
@@ -42,7 +46,8 @@ Item {
             placeholderText: "Username"
             font.pixelSize: 18
             Layout.fillWidth: true
-
+            text: authModel.username
+            onTextChanged: authModel.username = text
         }
 
         // Password Field
@@ -52,6 +57,8 @@ Item {
             echoMode: TextInput.Password
             font.pixelSize: 18
             Layout.fillWidth: true
+            text: authModel.password
+            onTextChanged: authModel.password = text
         }
 
         Button {
@@ -65,16 +72,6 @@ Item {
             Material.roundedScale: Material.SmallScale
             Material.background: Material.primary
 
-
-/*
-            background: Rectangle {
-                id: buttonBackground
-                color: loginButton.hovered ? "#00A6E0" : "white"
-                radius: 5
-                border.color: "#00A6E0"
-                border.width: 1
-            }
-*/
             contentItem: Text {
                 text: qsTr("Signup")
                 font.pixelSize: 22
@@ -84,7 +81,26 @@ Item {
             }
 
             onClicked: {
-                //AuthController.login()
+                authModel.signup()
+            }
+        }
+
+        // Error Handling
+        Text {
+            id: errorMessage
+            visible: false
+            color: "red"
+            font.pixelSize: 14
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        Connections {
+            target: authModel
+            function onLoginSuccessful() {
+                Router.setCurrentPage(2); // Navigate to Login
+            }
+            function onLoginFailed(reason) {
+                signupPage.setError(reason)
             }
         }
 
