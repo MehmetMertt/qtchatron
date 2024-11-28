@@ -1,6 +1,6 @@
 server/build/
-client/build/
+Client/build/
 client/client/build
 build/
 /server/bin
-/client/bin
+/Client/.qmlls.ini

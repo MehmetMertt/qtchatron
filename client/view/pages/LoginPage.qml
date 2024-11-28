@@ -5,6 +5,7 @@ import QtQuick.Layouts
 Page {
     id: loginPage
 
+
     Rectangle {
         anchors.fill: parent
         color: "white" // Background color
@@ -81,6 +82,10 @@ Page {
                 color: loginButton.hovered ? "white" : "#00A6E0"
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                //AuthController.login()
             }
         }
 

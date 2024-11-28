@@ -1,11 +1,12 @@
-import QtQuick
-import QtQuick.Controls 6.8
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Controls.Material
+import Client 1.0
 
 // import "styles"
 
 import "pages"
-import QtQml
+
 
 Window {
     id: root
@@ -13,13 +14,25 @@ Window {
     height: 680
     visible: true
     title: qsTr("QChatron")
-    property var client: ClientManager
 
     /*
     Material.primary: Style.primary
     Material.accent:  Style.accent
     Material.theme:   Style.theme
     */
+
+    Component.onCompleted: {
+        clientController.runClient()
+    }
+
+    ClientController {
+        id: clientController
+
+        onClientReady: {
+            mainStack.push(mainPage)
+        }
+    }
+
 
     StackView {
         id: mainStack
@@ -34,13 +47,7 @@ Window {
         }
     }
 
-    Connections {
-        target: client //root
-        function onLoadingChanged(){
-            console.log("Connection established!")
-            mainStack.push(mainPage)
-        }
-    }
+
 
 /*
     LoadingPage {

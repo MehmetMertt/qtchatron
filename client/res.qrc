@@ -1,13 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>view/Main.qml</file>
-        <file>view/pages/LoadingPage.qml</file>
-        <file>view/pages/LoginPage.qml</file>
-        <file>view/pages/MainPage.qml</file>
-        <file>view/components/utils/CustomBorder.qml</file>
-        <file>view/qtquickcontrols2.conf</file>
-        <file>view/styles/Style.qml</file>
-        <file>config/config.json</file>
         <file>certs/server.crt</file>
+        <file>config/config.json</file>
     </qresource>
 </RCC>

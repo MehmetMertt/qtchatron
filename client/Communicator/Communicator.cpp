@@ -39,18 +39,18 @@ void Communicator::connectToServer(const QString &address, quint16 port)
 }
 
 void Communicator::onConnected() {
-    if (!_clientSocket->waitForEncrypted(5000)) {  // Wait up to 5 seconds for the connection
+    /*if (!_clientSocket->waitForEncrypted(5000)) {  // Wait up to 5 seconds for the connection
         qWarning() << "SSL handshake failed:" << _clientSocket->errorString();
         return;
-    }
+    }*/
 
 }
 
 void Communicator::onEncrypted() {
     qDebug() << "Encrypted connection established";
-    sendMessage("Hello from Client", "hello");
-    sleep(3);
-    emit encrypted();
+    //sendMessage("Hello from Client", "hello");
+
+    emit socketEncrypted(true);
 }
 
 void Communicator::disconnectFromHost()
