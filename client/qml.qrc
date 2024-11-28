@@ -6,5 +6,6 @@
         <file>view/pages/LoginPage.qml</file>
         <file>view/pages/MainPage.qml</file>
         <file>view/components/utils/CustomBorder.qml</file>
+        <file>view/pages/SignupPage.qml</file>
     </qresource>
 </RCC>

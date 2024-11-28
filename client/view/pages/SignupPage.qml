@@ -5,7 +5,7 @@ import QtQuick.Controls.Material 2.15
 
 
 Page {
-    id: signupPage
+    id: loginPage
 
 
     Rectangle {
@@ -22,7 +22,7 @@ Page {
 
         // Title
         Text {
-            text: "Login"
+            text: "Signup"
             font.pixelSize: 36
             font.bold: true
             font.family: "Roboto"
@@ -51,7 +51,7 @@ Page {
 
         Button {
             id: signupButton
-            text: qsTr("Login")
+            text: qsTr("Signup")
             Layout.fillWidth: true
             font.pixelSize: 22
             //flat: true
@@ -71,7 +71,7 @@ Page {
             }
 */
             contentItem: Text {
-                text: qsTr("Login")
+                text: qsTr("Signup")
                 font.pixelSize: 22
                 color: "white"
                 horizontalAlignment: Text.AlignHCenter
@@ -84,7 +84,7 @@ Page {
         }
 
         Text {
-            text: "Forgot password?"
+            text: "Login instead?"
             color: Material.primary
             font.pixelSize: 16
             horizontalAlignment: Text.AlignHCenter
@@ -92,20 +92,7 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: console.log("Forgot password clicked!")
-            }
-        }
-
-        Text {
-            text: "Signup instead?"
-            color: Material.primary
-            font.pixelSize: 16
-            horizontalAlignment: Text.AlignHCenter
-            Layout.alignment: Qt.AlignHCenter
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: console.log("Signup instead clicked!")
+                onClicked: console.log("Login instead clicked!")
             }
         }
     }

@@ -1,9 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Controls.Material
+import QtQuick.Controls.Material 2.15
 import Client 1.0
 
-// import "styles"
 
 import "pages"
 
@@ -15,11 +14,9 @@ Window {
     visible: true
     title: qsTr("QChatron")
 
-    /*
-    Material.primary: Style.primary
-    Material.accent:  Style.accent
-    Material.theme:   Style.theme
-    */
+    Material.theme: Material.Dark // or Material.Dark
+    Material.accent: Material.Blue
+    Material.primary: Material.Blue
 
     Component.onCompleted: {
         clientController.runClient()
@@ -29,7 +26,7 @@ Window {
         id: clientController
 
         onClientReady: {
-            mainStack.push(mainPage)
+            //mainStack.push(mainPage)
         }
     }
 
@@ -37,11 +34,25 @@ Window {
     StackView {
         id: mainStack
         anchors.fill: parent
-        initialItem: LoadingPage{}
+        initialItem: LoginPage{}
 
         Component{
             id: mainPage
             MainPage{
+
+            }
+        }
+
+        Component{
+            id: loginPage
+            LoginPage{
+
+            }
+        }
+
+        Component{
+            id: signupPage
+            SignupPage{
 
             }
         }
