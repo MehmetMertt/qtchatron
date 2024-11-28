@@ -3,11 +3,18 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 
+import Client 1.0
 
 Page {
-    id: signupPage
+    id: loginPage
+    title: "Login"
 
+    signal switchToSignup
 
+    /*Router {
+        id: router
+    }
+*/
     Rectangle {
         anchors.fill: parent
         color: Material.background // Background color
@@ -60,16 +67,6 @@ Page {
             Material.roundedScale: Material.SmallScale
             Material.background: Material.primary
 
-
-/*
-            background: Rectangle {
-                id: buttonBackground
-                color: loginButton.hovered ? "#00A6E0" : "white"
-                radius: 5
-                border.color: "#00A6E0"
-                border.width: 1
-            }
-*/
             contentItem: Text {
                 text: qsTr("Login")
                 font.pixelSize: 22
@@ -105,7 +102,10 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: console.log("Signup instead clicked!")
+                onClicked: {
+                    Router.setCurrentPage(3)
+                    console.log("Signup instead clicked!")
+                }
             }
         }
     }

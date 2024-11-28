@@ -3,9 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 
+import Client 1.0
 
-Page {
-    id: loginPage
+Item {
+    id: signupPage
+
+    signal switchToLogin
+
+
 
 
     Rectangle {
@@ -92,7 +97,11 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: console.log("Login instead clicked!")
+                onClicked: {
+                    Router.setCurrentPage(2)
+                    //signupPage.switchToLogin()
+                    console.log("Login instead clicked!")
+                }
             }
         }
     }

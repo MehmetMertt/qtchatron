@@ -5,7 +5,6 @@ import "../components/utils"
 
 Page {
     id: mainPage
-    visible: true
     width: parent.width
     height: parent.height
 
