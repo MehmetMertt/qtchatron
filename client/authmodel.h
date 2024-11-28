@@ -21,6 +21,7 @@ public:
     // QML bindings for login and signup
     Q_INVOKABLE void login();
     Q_INVOKABLE void signup();
+    Q_INVOKABLE void logout();
 
     // Username getter and setter
     QString username() const;
@@ -33,8 +34,8 @@ public:
 signals:
     void usernameChanged();
     void passwordChanged();
-    void loginSuccessful();
-    void loginFailed(const QString &reason);
+    void authMethodSuccessful();
+    void authMethodFailed(const QString &reason);
 
 private:
     QString _username;

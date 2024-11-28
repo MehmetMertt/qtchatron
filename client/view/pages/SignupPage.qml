@@ -96,10 +96,10 @@ Item {
 
         Connections {
             target: authModel
-            function onLoginSuccessful() {
+            function onAuthMethodSuccessful() {
                 Router.setCurrentPage(2); // Navigate to Login
             }
-            function onLoginFailed(reason) {
+            function onAuthMethodFailed(reason) {
                 signupPage.setError(reason)
             }
         }

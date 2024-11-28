@@ -31,3 +31,11 @@ void AuthController::signup(const QString &username, const QString &password,
         callback(false, "Invalid data");
     }
 }
+
+void AuthController::logout(const std::function<void (bool, const QString &)> &callback)
+{
+    //TODO: Remove current user from Session
+
+
+    callback(true, "Logout successful");
+}

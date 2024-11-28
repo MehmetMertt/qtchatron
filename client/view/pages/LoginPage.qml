@@ -94,11 +94,11 @@ Page {
 
         Connections {
             target: authModel
-            function onLoginSuccessful() {
+            function onAuthMethodSuccessful() {
                 console.log("Login successful!");
                 Router.setCurrentPage(1); // Navigate to MainPage
             }
-            function onLoginFailed (reason) {
+            function onAuthMethodFailed (reason) {
                 loginPage.setError(reason)
             }
         }

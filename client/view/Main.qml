@@ -39,12 +39,6 @@ Window {
         }
     }
 
-    /*Router{
-        onCurrentPageChanged: () => {
-            console.log(router.currentPage)
-        }
-    }*/
-
 
     function setCurrentPage(c_page_index) {
         let pageToShow;
@@ -84,7 +78,6 @@ Window {
         id:signupPage;
         SignupPage{
 
-            //onSwitchToLogin: root.mainStack.pop()
         }
     }
 
@@ -98,7 +91,6 @@ Window {
         id:loginPage;
         LoginPage{
 
-            //onSwitchToSignup: mainStack.push(signupPage)
         }
     }
 

@@ -16,6 +16,9 @@ public:
 
     void signup(const QString &username, const QString &password,
                 const std::function<void(bool, const QString &)> &callback);
+
+    void logout(const std::function<void(bool, const QString &)> &callback);
+
 };
 
 #endif // AUTHCONTROLLER_H
