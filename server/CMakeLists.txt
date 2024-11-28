@@ -6,7 +6,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Sql)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -26,9 +26,13 @@ qt_add_qml_module(appserver
         Server/Server.cpp
         CommandHandler/CommandHandler.h
         CommandHandler/CommandHandler.cpp
+
     RESOURCES
         certs/server.crt
         certs/server.key
+        SOURCES Database/databasehandler.h
+        Database/databasehandler.cpp
+
 
 )
 
@@ -46,6 +50,7 @@ set_target_properties(appserver PROPERTIES
 
 target_link_libraries(appserver
     PRIVATE Qt6::Quick
+    Qt6::Sql
 )
 
 include(GNUInstallDirs)
