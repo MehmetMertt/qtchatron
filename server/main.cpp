@@ -12,7 +12,9 @@ int main(int argc, char *argv[])
 
     databaseHandler dbHandler = databaseHandler();
 
-    dbHandler.AddUser("Mehmett","Ok","Hi");
+    QSharedPointer<DatabaseResponse> dbr = dbHandler.AddUser("Mehmwewett","hwhwhdwhdwdw","Hi");
+    qDebug() << dbr->message();
+
 
     QSqlDatabase db = QSqlDatabase::database();
 

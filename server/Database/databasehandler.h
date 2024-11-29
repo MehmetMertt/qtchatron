@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtSql>
 #include <QSqlDatabase>
+#include "Utils/databaseresponse.h"
 
 class databaseHandler : public QObject
 {
@@ -11,7 +12,7 @@ class databaseHandler : public QObject
 public:
     explicit databaseHandler(QObject *parent = nullptr);
     QSqlDatabase getDatabase();
-    bool AddUser(const QString& username, const QString& password, const QString& profile_info);
+    QSharedPointer<DatabaseResponse> AddUser(const QString& username, const QString& password, const QString& profile_info);
 
 
 signals:

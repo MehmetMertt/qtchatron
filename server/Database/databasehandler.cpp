@@ -1,5 +1,13 @@
 #include "databasehandler.h"
 #include <QRandomGenerator>
+#include <QSqlError>
+#include <QSqlError>
+#include <QRegularExpression>
+#include <QCryptographicHash>
+
+
+
+
 
 QString generateSalt(int length = 15) {
     const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
@@ -18,9 +26,12 @@ QString generateSalt(int length = 15) {
 
 
 
+
 QSqlDatabase databaseHandler::getDatabase() {
     return QSqlDatabase::database();
 }
+
+
 
 
 /**
@@ -48,29 +59,59 @@ QString getSHA256(const QString &input)
  * \param profile_info Small User Description
  * \return true if inserted or false on error
  */
-bool databaseHandler::AddUser(const QString& username, const QString& password, const QString& profile_info) {
+QSharedPointer<DatabaseResponse> databaseHandler::AddUser(const QString& username, const QString& password, const QString& profile_info) {
     QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (username.isEmpty() || password.isEmpty()) {
+        dbr->setMessage("Username and password cannot be empty.");
+        return dbr;
+    }
+
+    if (password.length() < 8) {
+        dbr->setMessage("Password must be at least 8 characters long.");
+        return dbr;
+    }
+
+    QRegularExpression usernameRegex("^[a-zA-Z0-9_]+$");
+    if (!usernameRegex.match(username).hasMatch()) {
+        dbr->setMessage("The username contains invalid characters. Only letters, numbers, and underscores are allowed.");
+        return dbr;
+    }
 
     if (!db.isOpen()) {
         qDebug() << "Database is not open!";
-        return false;
+        dbr->setMessage("Internal Database Error. Database is not open. Contact a developer.");
+        return dbr;
     }
 
     QSqlQuery query(db);
     query.prepare("INSERT INTO Users (username, password_hash, password_salt, profile_info) VALUES (:username, :password_hash, :password_salt, :profile_info)");
     query.bindValue(":username", username);
     QString salt = generateSalt();
-    query.bindValue(":password_hash", getSHA256(password+salt));
+    query.bindValue(":password_hash", getSHA256(password + salt));
     query.bindValue(":password_salt", salt);
     query.bindValue(":profile_info", profile_info);
 
     if (!query.exec()) {
-        qDebug() << "Failed to insert User:" << query.lastError().text();
-        return false;
+        QSqlError error = query.lastError();
+
+        if (error.databaseText().contains("UNIQUE constraint failed")) {
+            if (error.databaseText().contains("UNIQUE constraint failed: Users.username")) {
+                dbr->setMessage("The username is already taken. Please choose another.");
+                return dbr;
+            }
+        } else {
+            dbr->setMessage("An unexpected database error occurred: " + error.text());
+            return dbr;
+        }
     }
 
-    return true;
+    dbr->setSuccess(true);
+    dbr->setMessage("Account successfully created.");
+    return dbr;
 }
+
 
 
 
