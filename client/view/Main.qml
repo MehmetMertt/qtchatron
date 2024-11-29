@@ -15,11 +15,9 @@ Window {
     visible: true
     title: qsTr("QChatron")
 
-    /*
-    Material.primary: Style.primary
-    Material.accent:  Style.accent
-    Material.theme:   Style.theme
-    */
+    Material.theme: Material.Dark // or Material.Dark
+    Material.accent: Material.Blue
+    Material.primary: Material.Blue
 
     Component.onCompleted: {
         clientController.runClient()
@@ -37,7 +35,7 @@ Window {
     StackView {
         id: mainStack
         anchors.fill: parent
-        initialItem: LoadingPage{}
+        initialItem: mainPage
 
         Component{
             id: mainPage
