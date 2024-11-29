@@ -9,7 +9,7 @@
 
 
 
-QString generateSalt(int length = 15) {
+QString generateRandomString(int length = 15) {
     const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     const int charactersLength = possibleCharacters.length();
 
@@ -63,19 +63,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::AddUser(const QString& usernam
     QSqlDatabase db = getDatabase();
     QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
 
-    if (username.isEmpty() || password.isEmpty()) {
-        dbr->setMessage("Username and password cannot be empty.");
-        return dbr;
-    }
-
-    if (password.length() < 8) {
-        dbr->setMessage("Password must be at least 8 characters long.");
-        return dbr;
-    }
-
-    QRegularExpression usernameRegex("^[a-zA-Z0-9_]+$");
-    if (!usernameRegex.match(username).hasMatch()) {
-        dbr->setMessage("The username contains invalid characters. Only letters, numbers, and underscores are allowed.");
+    if (!validateInput(username, password, dbr)) {
         return dbr;
     }
 
@@ -88,7 +76,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::AddUser(const QString& usernam
     QSqlQuery query(db);
     query.prepare("INSERT INTO Users (username, password_hash, password_salt, profile_info) VALUES (:username, :password_hash, :password_salt, :profile_info)");
     query.bindValue(":username", username);
-    QString salt = generateSalt();
+    QString salt = generateRandomString();
     query.bindValue(":password_hash", getSHA256(password + salt));
     query.bindValue(":password_salt", salt);
     query.bindValue(":profile_info", profile_info);
@@ -97,10 +85,9 @@ QSharedPointer<DatabaseResponse> databaseHandler::AddUser(const QString& usernam
         QSqlError error = query.lastError();
 
         if (error.databaseText().contains("UNIQUE constraint failed")) {
-            if (error.databaseText().contains("UNIQUE constraint failed: Users.username")) {
                 dbr->setMessage("The username is already taken. Please choose another.");
                 return dbr;
-            }
+
         } else {
             dbr->setMessage("An unexpected database error occurred: " + error.text());
             return dbr;
@@ -112,6 +99,32 @@ QSharedPointer<DatabaseResponse> databaseHandler::AddUser(const QString& usernam
     return dbr;
 }
 
+
+
+bool databaseHandler::verifyPassword(const QString& inputPassword, const QString& storedHash, const QString& storedSalt) {
+    QString inputHash = getSHA256(inputPassword + storedSalt);
+    return inputHash == storedHash;
+}
+
+bool databaseHandler::validateInput(const QString& username, const QString& password, QSharedPointer<DatabaseResponse>& dbr) {
+    if (username.isEmpty() || password.isEmpty()) {
+        dbr->setMessage("Username and password cannot be empty.");
+        return false;
+    }
+
+    if (password.length() < 8) {
+        dbr->setMessage("Password must be at least 8 characters long.");
+        return false;
+    }
+
+    QRegularExpression usernameRegex("^[a-zA-Z0-9_]+$");
+    if (!usernameRegex.match(username).hasMatch()) {
+        dbr->setMessage("The username contains invalid characters. Only letters, numbers, and underscores are allowed.");
+        return false;
+    }
+
+    return true;
+}
 
 /**
  * \brief Logins a User to the database
@@ -126,19 +139,8 @@ QSharedPointer<DatabaseResponse> databaseHandler::LoginUser(const QString& usern
     QSqlDatabase db = getDatabase();
     QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
 
-    if (username.isEmpty() || password.isEmpty()) {
-        dbr->setMessage("Username and password cannot be empty.");
-        return dbr;
-    }
 
-    if (password.length() < 8) {
-        dbr->setMessage("Password must be at least 8 characters long.");
-        return dbr;
-    }
-
-    QRegularExpression usernameRegex("^[a-zA-Z0-9_]+$");
-    if (!usernameRegex.match(username).hasMatch()) {
-        dbr->setMessage("The username contains invalid characters. Only letters, numbers, and underscores are allowed.");
+    if (!validateInput(username, password, dbr)) {
         return dbr;
     }
 
@@ -149,7 +151,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::LoginUser(const QString& usern
     }
 
     QSqlQuery query(db);
-    query.prepare("SELECT password_hash, password_salt FROM USERS WHERE username = :username");
+    query.prepare("SELECT id,password_hash, password_salt FROM USERS WHERE username = :username");
     query.bindValue(":username", username);
 
     if (!query.exec()) {
@@ -165,19 +167,43 @@ QSharedPointer<DatabaseResponse> databaseHandler::LoginUser(const QString& usern
 
     // Retrieve hash and salt
     QString storedHash = query.value("password_hash").toString();
+    QString id = query.value("id").toString();
     QString storedSalt = query.value("password_salt").toString();
 
     // Hash the input password with the stored salt
     QString inputHash = getSHA256(password + storedSalt);
 
-    if (inputHash != storedHash) {
+    if (!verifyPassword(password, storedHash, storedSalt)) {
         dbr->setMessage("Invalid Username or Password");
         return dbr;
     }
 
+
+
     // Login successful
+
+    //TODO: logout function -> delete token for username from table
+    //TODO: get channels & messages from user
+
+    return insertTokenByID(id);
+}
+
+QSharedPointer<DatabaseResponse> databaseHandler::insertTokenByID(const QString& id) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+    QSqlQuery query(db);
+    QString token = generateRandomString(20);
+    QString expires_at = QDateTime::currentDateTime().addDays(21).toString(Qt::ISODate); //make token expire in 21 days
+    query.prepare("REPLACE INTO AuthTokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)"); //replace is really interessting REPLACE does INSERT OR REPLACE (if unique constraint)
+    query.bindValue(":user_id",id);
+    query.bindValue(":token",token);
+    query.bindValue(":expires_at",expires_at);
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+    dbr->setMessage("token:"+token);
     dbr->setSuccess(true);
-    dbr->setMessage("Login successful.");
     return dbr;
 }
 

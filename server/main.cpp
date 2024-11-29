@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     QSharedPointer<DatabaseResponse> dbr = dbHandler.AddUser("Mehmwewett","hwhwhdwhdwdw","Hi");
     qDebug() << dbr->message();
 
-    dbr = dbHandler.LoginUser("Mehmwewsett","hwhwhdwhdwdw");
+    dbr = dbHandler.LoginUser("Mehmwewett","hwhwhdwhdwdw");
 
     qDebug() << dbr->message();
 

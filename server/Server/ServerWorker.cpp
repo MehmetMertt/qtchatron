@@ -21,6 +21,8 @@ void ServerWorker::disconnectFromClient()
     }
 }
 
+//TODO: custom header like example
+
 
 // https://wiki.qt.io/WIP-How_to_create_a_simple_chat_application#The_Single_Thread_Server
 void ServerWorker::receiveJson()
