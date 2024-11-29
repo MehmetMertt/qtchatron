@@ -8,12 +8,13 @@ import QtQuick.Controls.Material
 Rectangle {
     id: topbar
     height: 50
-    anchors.top: parent.top
-    anchors.right: parent.right
     color: "#252328"
     clip: true
 
     property var pageTitle: "Direct Messages"
+    property var pageType: "dm"
+
+    signal toggleChannelInfobar()
 
     Rectangle {
         color: "transparent"
@@ -51,7 +52,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             flat: true
 
-            visible: (topbar.pageTitle === "Direct Messages")
+            visible: (topbar.pageType === "dm")
 
             contentItem: Text {
                 text: addDirectMessage.text
@@ -59,6 +60,31 @@ Rectangle {
                 color: Material.primary
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+            }
+        }
+
+        Button {
+            id: showInfo
+            text: "Info"
+            font.pixelSize: 18
+            Layout.preferredHeight: 45
+            Material.elevation: 0
+            Material.roundedScale: Material.SmallScale
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            flat: true
+
+            visible: (topbar.pageType === "channel")
+
+            contentItem: Text {
+                text: showInfo.text
+                font.pixelSize: 18
+                color: Material.foreground
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                topbar.toggleChannelInfobar()
             }
         }
 

@@ -11,7 +11,7 @@ Item {
         color: "#252328"
 
         ScrollView {
-            id: dmScrolLView
+            id: dmScrollView
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.fill: parent

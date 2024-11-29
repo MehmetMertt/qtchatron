@@ -7,6 +7,7 @@ import Client 1.0
 
 import "../components/mainPage"
 import "../components/directMessage"
+import "../components/channels"
 
 Page {
     id: mainPage
@@ -16,16 +17,28 @@ Page {
     // Sidebar
     Sidebar{
         id: sidebar
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
     }
 
     Topbar {
         id: topbar
         anchors.left: sidebar.right
-        pageTitle: qsTr("Myy Channel")
+        anchors.top: parent.top
+        anchors.right: parent.right
+        pageTitle: qsTr("Myyy Channel")
+        pageType: qsTr("channel")
+
+        onToggleChannelInfobar: () => {
+            console.log("toggle")
+            channelPage.toggleInfobarVisibility()
+        }
     }
 
     // Main Content Area
-    DirectMessageOverviewPage {
+    ChannelPage {
+        id: channelPage
         anchors.left: sidebar.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom

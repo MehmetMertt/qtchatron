@@ -1,21 +1,18 @@
-import QtQuick
+import QtQuick 2.15
 import QtQuick.Layouts
-import QtQuick.Controls.Material
-
-import "../user"
 
 Rectangle {
-    id: dmListItem
-    width: parent.width - parent.width/10
-    height: 60
-    radius: 10
+    id: userCard
+    height: 40
+    radius: 5
     color: "transparent"
+    width: parent.width
 
     Rectangle {
         id: background
         anchors.fill: parent
         radius: parent.radius
-        color: mouseArea.containsMouse ? "#707070" : "transparent"  // Light grey on hover, transparent otherwise
+        color: mouseArea.containsMouse ? "#565656" : "transparent"  // Light grey on hover, transparent otherwise
         opacity: 0.5  // Adjust opacity for a subtle effect
     }
 
@@ -31,13 +28,15 @@ Rectangle {
         // User Icon (e.g., Avatar or Image)
         UserIcon {
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter  // Vertically center the icon
+            Layout.preferredHeight: 30
+            Layout.preferredWidth: 30
         }
 
         // Text Label
         Text {
             text: model.name  // Display the channel or user name
             color: "white"  // Text color
-            font.pixelSize: 18  // Adjust font size as needed // Vertically center the text
+            font.pixelSize: 16  // Adjust font size as needed // Vertically center the text
         }
 
         Item { Layout.fillWidth: true }
@@ -59,11 +58,4 @@ Rectangle {
 
 
 
-
-/*
-    MouseArea {
-        anchors.fill: parent
-        onClicked: console.log("Channel clicked: " + model.name)
-    }
-*/
 }

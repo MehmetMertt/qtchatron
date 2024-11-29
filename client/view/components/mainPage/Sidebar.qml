@@ -9,9 +9,6 @@ import "../channels"
 Rectangle {
     id: sidebar
     width: 80
-    anchors.left: parent.left
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
     color: Material.background
 
     // Friends Icon

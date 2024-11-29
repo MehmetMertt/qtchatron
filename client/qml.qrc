@@ -12,5 +12,8 @@
         <file>view/components/mainPage/Sidebar.qml</file>
         <file>view/components/mainPage/Topbar.qml</file>
         <file>view/components/directMessage/DirectMessageOverviewPage.qml</file>
+        <file>view/components/channels/ChannelPage.qml</file>
+        <file>view/components/channels/ChannelInfobar.qml</file>
+        <file>view/components/user/UserCard.qml</file>
     </qresource>
 </RCC>
