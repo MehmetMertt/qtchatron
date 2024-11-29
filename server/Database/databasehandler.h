@@ -18,6 +18,7 @@ public:
     QSharedPointer<DatabaseResponse> LoginUser(const QString& username, const QString& password);
     QSharedPointer<DatabaseResponse> insertTokenByID(const QString& id);
 
+    QSharedPointer<DatabaseResponse> logoutUserByID(const QString& id);
 
 
 signals:

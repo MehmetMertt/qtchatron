@@ -208,6 +208,27 @@ QSharedPointer<DatabaseResponse> databaseHandler::insertTokenByID(const QString&
 }
 
 
+QSharedPointer<DatabaseResponse> databaseHandler::logoutUserByID(const QString& id) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+    QSqlQuery query(db);
+    query.prepare("DELETE FROM AuthTokens WHERE user_id = :user_id");
+    query.bindValue(":user_id",id);
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+    int affectedRows = query.numRowsAffected();
+    if(affectedRows <= 0){
+        dbr->setMessage("No token found to delete");
+        return dbr;
+    }
+    dbr->setMessage("token deleted");
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
 QSqlError initDb()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
