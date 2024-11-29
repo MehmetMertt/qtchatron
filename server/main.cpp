@@ -21,9 +21,10 @@ int main(int argc, char *argv[])
 
   //  qDebug() << dbr->message();
 
-    dbr = dbHandler.logoutUserByID("3");
+    dbr = dbHandler.getAllDirectMessagesByUserID("2");
 
     qDebug() << dbr->message();
+
 
 
     QSqlDatabase db = QSqlDatabase::database();

@@ -182,7 +182,6 @@ QSharedPointer<DatabaseResponse> databaseHandler::LoginUser(const QString& usern
 
     // Login successful
 
-    //TODO: logout function -> delete token for username from table
     //TODO: get channels & messages from user
 
     return insertTokenByID(id);
@@ -206,6 +205,61 @@ QSharedPointer<DatabaseResponse> databaseHandler::insertTokenByID(const QString&
     dbr->setSuccess(true);
     return dbr;
 }
+
+/**
+ * \brief Logins a User to the database
+ *
+ * This function takes the username, password and returns a QShardPointer<DatabaseResponse> Object
+ *
+ * \param id ID of the sender
+ * \return returns QSharedPointer<DatabaseResponse> Object with message NULL if no messages or json of ID & Username
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(const QString& id) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT DISTINCT u.username, dm.receiver_id
+        FROM DirectMessages dm
+        JOIN Users u ON dm.receiver_id = u.id
+        WHERE dm.sender_id = :user_id
+    )");
+    query.bindValue(":user_id", id);
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        messageObject["id"] = query.value("receiver_id").toString();
+        messageObject["username"] = query.value("username").toString();
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(true);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
+
 
 
 QSharedPointer<DatabaseResponse> databaseHandler::logoutUserByID(const QString& id) {

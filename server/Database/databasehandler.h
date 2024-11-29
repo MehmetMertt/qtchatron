@@ -19,6 +19,7 @@ public:
     QSharedPointer<DatabaseResponse> insertTokenByID(const QString& id);
 
     QSharedPointer<DatabaseResponse> logoutUserByID(const QString& id);
+    QSharedPointer<DatabaseResponse> getAllDirectMessagesByUserID(const QString& id);
 
 
 signals:
