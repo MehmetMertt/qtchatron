@@ -13,6 +13,7 @@ public:
     explicit databaseHandler(QObject *parent = nullptr);
     QSqlDatabase getDatabase();
     QSharedPointer<DatabaseResponse> AddUser(const QString& username, const QString& password, const QString& profile_info);
+    QSharedPointer<DatabaseResponse> LoginUser(const QString& username, const QString& password);
 
 
 signals:
