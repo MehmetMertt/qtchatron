@@ -15,6 +15,7 @@ Window {
     visible: true
     title: qsTr("QChatron")
 
+
     Material.theme: Material.Dark // or Material.Dark
     Material.accent: Material.Blue
     Material.primary: Material.Blue
