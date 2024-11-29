@@ -201,7 +201,32 @@ QSharedPointer<DatabaseResponse> databaseHandler::insertTokenByID(const QString&
         dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
         return dbr;
     }
-    dbr->setMessage("token:"+token);
+    dbr->setMessage(token);
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
+
+QSharedPointer<DatabaseResponse> databaseHandler::getIDByToken(const QString& token) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+    QSqlQuery query(db);
+    query.prepare("SELECT u.id FROM Users u JOIN AuthTokens at ON u.id = at.user_id WHERE at.token  = :token"); //replace is really interessting REPLACE does INSERT OR REPLACE (if unique constraint)
+    query.bindValue(":token",token);
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+    if (!query.next()) {
+        // ID not found
+        dbr->setMessage("null");
+        return dbr;
+    }
+
+    QString id = query.value("id").toString();
+
+    dbr->setMessage(id);
     dbr->setSuccess(true);
     return dbr;
 }

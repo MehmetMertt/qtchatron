@@ -15,17 +15,20 @@ int main(int argc, char *argv[])
     QSharedPointer<DatabaseResponse> dbr = dbHandler.AddUser("Mehmwewett","hwhwhdwhdwdw","Hi");
     qDebug() << dbr->message();
 
-   // dbr = dbHandler.LoginUser("Mehmwewett","hwhwhdwhdwdw");
+    dbr = dbHandler.LoginUser("Mehmwewett","hwhwhdwhdwdw");
 
 
 
-  //  qDebug() << dbr->message();
+    QString token = dbr->message();
+    qDebug() << "token: " << token;
 
-    dbr = dbHandler.getAllDirectMessagesByUserID("2");
+    //dbr = dbHandler.getAllDirectMessagesByUserID("2");
+
+   // qDebug() << dbr->message();
+
+    dbr = dbHandler.getIDByToken(token+"gg");
 
     qDebug() << dbr->message();
-
-
 
     QSqlDatabase db = QSqlDatabase::database();
 
