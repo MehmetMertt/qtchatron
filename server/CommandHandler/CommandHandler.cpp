@@ -1,38 +1,31 @@
 #include "CommandHandler/CommandHandler.h"
 
-#include <QJsonObject>
+#include <QString>
+#include <QDebug>
 
 CommandHandler::CommandHandler(QObject* parent) : QObject(parent) {}
 
-QJsonObject CommandHandler::routeCommand(const QJsonObject& jsonObj)
+std::string CommandHandler::routeCommand(const Command& command)
 {
-    QJsonObject response;
-    response[QStringLiteral("type")] = QStringLiteral("message");
-    if (jsonObj.contains("command")) {
-        QString command = jsonObj["command"].toString();
+    std::string response;
+    std::string cmd = command.command();
+    std::string params = command.params();
+    qDebug() << "route command:" << QString::fromStdString(cmd);
 
-        qDebug() << "route command " << command;
-
-        if (command == "hello") {
-            // Respond with "hello"
-
-            response[QStringLiteral("text")] = QStringLiteral("hello");
-            emit jsonResponse(response);
-        }
-        else if (command == "login") {
-            // Respond with request for username
-            response["text"] = "enter username";
-            emit jsonResponse(response);
-        }
-        else {
-            response["text"] = "Error";
-            // Handle unknown commands
-            emit logMessage("Unknown command: " + command);
-        }
-
-    } else {
-        emit logMessage("Invalid message: Missing 'command' field");
-        response["text"] = "Error";
+    if (cmd == "hello") {
+        // Respond with "hello"
+        response = "hello";
     }
+    else if (cmd == "login") {
+        // Respond with request for username
+        response = "enter username";
+    }
+    else {
+        // Handle unknown commands
+        QString qCommand = QString::fromStdString(cmd);
+        emit logMessage("Unknown command: " + qCommand);
+        response = "Error: Unknown command";
+    }
+
     return response;
 }

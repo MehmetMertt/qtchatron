@@ -28,7 +28,11 @@ qt_add_qml_module(appclient
         certs/sslserver.pem
         certs/server.crt
         QML_FILES config/config.json
+        SOURCES
+        SOURCES Protocol/protocol.h Protocol/protocol.cpp
 )
+
+# Add the SharedProtocol subdirectory
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

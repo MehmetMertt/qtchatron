@@ -32,6 +32,8 @@ qt_add_qml_module(appserver
         SOURCES Database/databasehandler.h
         Database/databasehandler.cpp
         SOURCES Utils/databaseresponse.h Utils/databaseresponse.cpp
+        SOURCES Protocol/protocol.h Protocol/protocol.cpp
+        SOURCES CommandHandler/command.h CommandHandler/command.cpp
 
 
 )
