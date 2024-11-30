@@ -73,9 +73,16 @@ Rectangle {
 
             // Upload Button (Plus Icon)
             ToolButton {
-                icon.source: "qrc:/icons/upload.png"  // Replace with an actual path to your icon
+                icon.source: "qrc:/icons/add_plus_icon.png"  // Replace with an actual path to your icon
                 icon.color: "#FFFFFF"
+                icon.height: 35
+                icon.width: 35
                 Layout.alignment: Qt.AlignVCenter
+
+                background: Rectangle {
+                    color: "#2A2A2A"  // Button background color
+                    radius: width / 2  // Makes the button fully round
+                }
             }
 
             // Input Field Background
@@ -156,29 +163,43 @@ Rectangle {
 
             // Emoji Button
             ToolButton {
-                icon.source: "qrc:/icons/emoji.png"  // Replace with an actual path to your icon
+                icon.source: "qrc:/icons/emoji_icon.png"  // Replace with an actual path to your icon
                 icon.color: "#FFFFFF"
+                icon.height: 35
+                icon.width: 35
                 Layout.alignment: Qt.AlignVCenter
+
+                background: Rectangle {
+                    color: "#2A2A2A"  // Button background color
+                    radius: width / 2  // Makes the button fully round
+                }
             }
 
             // GIF Button
             ToolButton {
-                icon.source: "qrc:/icons/gif.png"  // Replace with an actual path to your icon
+                icon.source: "qrc:/icons/gif2_icon.png"  // Replace with an actual path to your icon
                 icon.color: "#FFFFFF"
+                icon.height: 35
+                icon.width: 35
                 Layout.alignment: Qt.AlignVCenter
+
+                background: Rectangle {
+                    color: "#2A2A2A"  // Button background color
+                    radius: width / 2  // Makes the button fully round
+                }
             }
 
             // Send Button
             Rectangle {
-                Layout.preferredWidth: 50
-                Layout.preferredHeight: 50
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: 45
                 radius: 25
                 color: "#1E88E5"
                 Layout.alignment: Qt.AlignVCenter
 
                 Image {
                     anchors.centerIn: parent
-                    source: "qrc:/icons/send.png"  // Replace with an actual path to your icon
+                    source: "qrc:/icons/send_icon.png"  // Replace with an actual path to your icon
                     width: 30
                     height: 30
                 }
