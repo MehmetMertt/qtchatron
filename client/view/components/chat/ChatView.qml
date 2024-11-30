@@ -19,7 +19,7 @@ Rectangle {
         target: root.messageModel
         function onSendMessageSuccess() {
             messageField.text = ""
-            chatListView.currentIndex = chatListView.count - 2
+            chatListView.positionViewAtEnd();
         }
     }
 
@@ -27,20 +27,29 @@ Rectangle {
         id: clientChat
         anchors.top: parent.top
         width: root.width
-        anchors.bottom: root.bottom
+        anchors.bottom: bottomBar.top
 
         color: "transparent"
 
         ScrollView {
             anchors.fill: parent
-            anchors.margins: 15
             clip: true
+
 
             ListView{
                 id: chatListView
                 anchors.fill: parent
+                anchors.margins: 20
                 model: root.chatList
                 spacing: 8
+
+                onMovementEnded: {
+                    chatListView.returnToBounds();  // Stops the list immediately
+                }
+/*
+                highlightMoveDuration: 1000
+                highlightMoveVelocity: -1
+                */
 
                 highlightFollowsCurrentItem: true
 
@@ -146,10 +155,9 @@ Rectangle {
                             }
                         }
                         Keys.onPressed: (event)=> {
-                            console.log(event.key, Qt.Key_Enter)
-                            if ((event.key+1 == Qt.Key_Enter && event.count == 1)){
-                                console.log("success")
+                            if ((event.key+1 == Qt.Key_Enter && (event.modifiers == 0 || event.modifiers == Qt.ControlModifier))){
                                 sendButton.sendMessage()
+                                event.accepted = true;
                             }
                         }
                         // Dynamically update height based on the number of lines
@@ -231,9 +239,13 @@ Rectangle {
                 }
 
                 function sendMessage(){
-                    if(messageField.text == ""){
-                        return;
+                    let trimmedMessage = messageField.text.trim();  // Remove leading and trailing whitespace
+
+                    // Check if the message is empty after trimming
+                    if(trimmedMessage === "") {
+                        return;  // Don't send if the message is empty
                     }
+                    root.messageModel.inputMessage = trimmedMessage
                     root.messageModel.sendMessage()
                     messageField.text = ""
                 }

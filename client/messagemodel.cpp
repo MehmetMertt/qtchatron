@@ -24,6 +24,9 @@ void MessageModel::setInputMessage(const QString &inputMessage)
 }
 
 void MessageModel::sendMessage(){
+    if (_inputMessage.isEmpty()) {
+        return;  // Safety check
+    }
     qDebug() << _inputMessage;
     // an den MessageController schicken
     // von MessageController an den Server schicken
@@ -33,7 +36,6 @@ void MessageModel::sendMessage(){
     oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
     QString timeString = QString::fromStdString(oss.str());
     _messageList.append(new ChatMessageItem("michi", _inputMessage, timeString));
-    _inputMessage = "";
     emit messageListChanged();
     emit sendMessageSuccess();
 }
