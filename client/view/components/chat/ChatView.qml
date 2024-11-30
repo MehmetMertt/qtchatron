@@ -121,7 +121,6 @@ Rectangle {
 
                     TextArea {
                         id: messageField
-                        anchors.fill: parent
 
                         //verticalAlignment: Qt.AlignTop
                         wrapMode: TextArea.Wrap
@@ -148,11 +147,11 @@ Rectangle {
                         onTextChanged: {
                             // Count the number of lines (using "\n" as line break delimiter)
                             var lines = messageField.text.split("\n").length;
-                            console.log(lines)
+                            //console.log(lines)
                             // Limit the height to 4 rows (80px) maximum
                             //inputFieldContainer.height = Math.min(((lines-1) * 20 + 50), 110);
                             bottomBar.height = Math.min((lines-1)*20 + 80, 180);
-                            console.log(inputFieldContainer.height)
+                            //console.log(inputFieldContainer.height)
                         }
 
 
