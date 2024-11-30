@@ -1,6 +1,6 @@
-#include "protocol.h"
+#include "Protocol.h"
 
-std::string protocol::serialize() const {
+std::string Protocol::serialize() const {
     std::string serializedData;
 
     // Serialize MessageType (2 bytes)
@@ -31,7 +31,7 @@ std::string protocol::serialize() const {
     return serializedData;
 }
 
-void protocol::deserialize(const std::string& data) {
+void Protocol::deserialize(const std::string& data) {
     if (data.size() < 10) { // Minimum size: 2 (type) + 4 (name length) + 4 (payload length)
         throw std::runtime_error("Data too small to deserialize");
     }
@@ -71,4 +71,34 @@ void protocol::deserialize(const std::string& data) {
 
     // Deserialize the payload
     payload = data.substr(offset, payloadLength);
+}
+
+MessageType Protocol::getMsgType() const
+{
+    return msgType;
+}
+
+void Protocol::setMsgType(MessageType newMsgType)
+{
+    msgType = newMsgType;
+}
+
+std::string Protocol::getName() const
+{
+    return name;
+}
+
+void Protocol::setName(const std::string &newName)
+{
+    name = newName;
+}
+
+std::string Protocol::getPayload() const
+{
+    return payload;
+}
+
+void Protocol::setPayload(const std::string &newPayload)
+{
+    payload = newPayload;
 }

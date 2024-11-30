@@ -21,7 +21,7 @@ void ServerWorker::disconnectFromClient()
 }
 
 
-void ServerWorker::sendData(const protocol& p)
+void ServerWorker::sendData(const Protocol& p)
 {
     std::string serializedData = p.serialize();
     quint32 dataLength = serializedData.size();
@@ -52,27 +52,27 @@ void ServerWorker::receiveData()
             break;
         }
 
-        // Read the serialized protocol data
+        // Read the serialized Protocol data
         QByteArray serializedData;
         serializedData.resize(dataLength);
         socketStream.readRawData(serializedData.data(), dataLength);
 
         if (socketStream.commitTransaction()) {
-            // Deserialize the protocol message
-            protocol receivedProtocol;
+            // Deserialize the Protocol message
+            Protocol receivedProtocol;
             try {
                 receivedProtocol.deserialize(serializedData.toStdString());
 
                 qDebug() << "Received Protocol Object:";
-                qDebug() << "MessageType:" << receivedProtocol.msgType;
-                qDebug() << "Name:" << QString::fromStdString(receivedProtocol.name);
-                qDebug() << "Payload:" << QString::fromStdString(receivedProtocol.payload);
+                qDebug() << "MessageType:" << receivedProtocol.getMsgType();
+                qDebug() << "Name:" << QString::fromStdString(receivedProtocol.getName());
+                qDebug() << "Payload:" << QString::fromStdString(receivedProtocol.getPayload());
 
                 // Emit messageReceived signal
                 emit messageReceived(this, receivedProtocol);
 
             } catch (const std::exception& ex) {
-                emit logMessage("Failed to deserialize protocol: " + QString(ex.what()));
+                emit logMessage("Failed to deserialize Protocol: " + QString(ex.what()));
             }
         } else {
             // Data was incomplete, wait for more

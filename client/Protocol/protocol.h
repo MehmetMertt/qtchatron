@@ -22,30 +22,39 @@ enum MessageType : uint16_t {
     COMMAND_TRANSFER = 0x03
 };
 
-class protocol {
+class Protocol {
 public:
-    // Header fields
-    MessageType msgType;  // Type of message
-    std::string name;     // Name or identifier (beispiel: command name)
-    std::string payload;  // Content of the message (text as a string)
-
-    // Constructor for creating a protocol object
-    protocol(MessageType msgT, const std::string& name, const std::string& payload)
+    // Constructor for creating a Protocol object
+    Protocol(MessageType msgT, const std::string& name, const std::string& payload)
         : msgType(msgT), name(name), payload(payload) {}
 
     // Default constructor
-    protocol() : msgType(MessageType::MESSAGE_TRANSFER), name(""), payload("") {}
+    Protocol() : msgType(MessageType::MESSAGE_TRANSFER), name(""), payload("") {}
 
     // Constructor for deserialization
-    protocol(const std::string& data) {
+    Protocol(const std::string& data) {
         deserialize(data);
     }
 
-    // Serialize the protocol object to a string
+    // Serialize the Protocol object to a string
     std::string serialize() const;
 
-    // Deserialize a string to a protocol object
+    // Deserialize a string to a Protocol object
     void deserialize(const std::string& data);
+
+    MessageType getMsgType() const;
+    void setMsgType(MessageType newMsgType);
+
+    std::string getName() const;
+    void setName(const std::string &newName);
+
+    std::string getPayload() const;
+    void setPayload(const std::string &newPayload);
+
+private:
+    MessageType msgType;  // Type of message
+    std::string name;     // Name or identifier (e.g., command name)
+    std::string payload;  // Content of the message (text or binary as a string)
 };
 
-#endif // PROTOCOL_H
+#endif // Protocol_H

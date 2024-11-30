@@ -16,7 +16,7 @@ class Server : public QTcpServer
 public:
     explicit Server(QHostAddress address = QHostAddress::Any, quint16 port = 45000, QObject *parent = nullptr);
     void start();
-    void handleMessageReceived(ServerWorker* sender, const protocol& p);
+    void handleMessageReceived(ServerWorker* sender, const Protocol& p);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
@@ -37,7 +37,7 @@ private:
     void sendJson(ServerWorker *destination, const QJsonObject &message);
     bool setSslLocalCertificate(const QString &path, QSsl::EncodingFormat format = QSsl::Pem);
     bool setSslPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algorithm = QSsl::Rsa, QSsl::EncodingFormat format = QSsl::Pem, const QByteArray &passPhrase = QByteArray());
-    void setSslProtocol(QSsl::SslProtocol protocol);
+    void setSslProtocol(QSsl::SslProtocol Protocol);
 
     QVector<ServerWorker *> _clients;
 

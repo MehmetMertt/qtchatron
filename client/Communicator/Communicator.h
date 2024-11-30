@@ -4,7 +4,7 @@
 
 #include <QObject>
 #include <QSslSocket>
-#include "Protocol/protocol.h"
+#include "Protocol/Protocol.h"
 
 class Communicator : public QObject
 {
@@ -15,7 +15,7 @@ public:
     void disconnectFromHost();
 
     // General send function
-    void sendData(const protocol& p);
+    void sendData(const Protocol& p);
 
 signals:
     void logMessage(const QString &message);
@@ -28,9 +28,9 @@ private slots:
     void error(QAbstractSocket::SocketError socketError);
 
 private:
-    void handleProtocolMessage(const protocol& p);
+    void handleProtocolMessage(const Protocol& p);
     bool setSslCaCertificate(const QString &path, QSsl::EncodingFormat format = QSsl::Pem);
-    void setSslProtocol(QSsl::SslProtocol protocol);
+    void setSslProtocol(QSsl::SslProtocol Protocol);
 
     QSslSocket *_clientSocket;
     QSslCertificate _sslCaCertificate;

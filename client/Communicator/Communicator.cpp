@@ -45,8 +45,7 @@ void Communicator::onConnected()
 void Communicator::onEncrypted()
 {
     qDebug() << "Encrypted connection established.";
-    // Optionally, send an initial message or command
-    sendData(protocol(MessageType::COMMAND_TRANSFER, "hello", "Hello Server"));
+    sendData(Protocol(MessageType::COMMAND_TRANSFER, "hello", "Hello Server")); //test
 }
 
 void Communicator::disconnectFromHost()
@@ -54,7 +53,7 @@ void Communicator::disconnectFromHost()
     _clientSocket->disconnectFromHost();
 }
 
-void Communicator::sendData(const protocol& p)
+void Communicator::sendData(const Protocol& p)
 {
     std::string serializedData = p.serialize();
     quint32 dataLength = serializedData.size();
@@ -85,44 +84,43 @@ void Communicator::onReadyRead()
             break;
         }
 
-        // Read the serialized protocol data
+        // Read the serialized Protocol data
         QByteArray serializedData;
         serializedData.resize(dataLength);
         socketStream.readRawData(serializedData.data(), dataLength);
 
         if (socketStream.commitTransaction()) {
-            // Deserialize the protocol message
-            protocol receivedProtocol;
+            // Deserialize the Protocol message
+            Protocol receivedProtocol;
             try {
                 receivedProtocol.deserialize(serializedData.toStdString());
 
                 qDebug() << "Received Protocol Object:";
-                qDebug() << "MessageType:" << receivedProtocol.msgType;
-                qDebug() << "Name:" << QString::fromStdString(receivedProtocol.name);
-                qDebug() << "Payload:" << QString::fromStdString(receivedProtocol.payload);
+                qDebug() << "MessageType:" << receivedProtocol.getMsgType();
+                qDebug() << "Name:" << QString::fromStdString(receivedProtocol.getName());
+                qDebug() << "Payload:" << QString::fromStdString(receivedProtocol.getPayload());
 
-                // Handle the received protocol message
+                // Handle the received Protocol message
                 handleProtocolMessage(receivedProtocol);
 
             } catch (const std::exception& ex) {
-                emit logMessage("Failed to deserialize protocol: " + QString(ex.what()));
+                emit logMessage("Failed to deserialize Protocol: " + QString(ex.what()));
             }
         } else {
-            // Data was incomplete, wait for more
             break;
         }
     }
 }
 
-void Communicator::handleProtocolMessage(const protocol& p)
+void Communicator::handleProtocolMessage(const Protocol& p)
 {
-    switch (p.msgType) {
+    switch (p.getMsgType()) {
     case MessageType::MESSAGE_TRANSFER:
-        emit messageReceived(QString::fromStdString(p.name), QString::fromStdString(p.payload));
+        emit messageReceived(QString::fromStdString(p.getName()), QString::fromStdString(p.getPayload()));
         break;
     case MessageType::COMMAND_TRANSFER:
-        // Handle command responses if necessary
-        emit logMessage("Command response received: " + QString::fromStdString(p.payload));
+        // implement command_transfer
+        emit logMessage("Command response received: " + QString::fromStdString(p.getPayload()));
         break;
     case MessageType::FILE_TRANSFER:
         // Handle file transfers if implemented
@@ -153,7 +151,7 @@ bool Communicator::setSslCaCertificate(const QString &path, QSsl::EncodingFormat
     return true;
 }
 
-void Communicator::setSslProtocol(QSsl::SslProtocol protocol)
+void Communicator::setSslProtocol(QSsl::SslProtocol Protocol)
 {
-    _sslProtocol = protocol;
+    _sslProtocol = Protocol;
 }

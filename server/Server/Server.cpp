@@ -24,15 +24,15 @@ void Server::start() {
         qDebug().nospace() << "ERROR: could not bind to " << qPrintable(_address.toString()) << ":" << _port;
 }
 
-void Server::handleMessageReceived(ServerWorker* sender, const protocol& p)
+void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
 {
     Q_ASSERT(sender);
     qDebug() << "ok";
             // Handle the message based on its type
-    switch (p.msgType) {
+    switch (p.getMsgType()) {
     case MessageType::COMMAND_TRANSFER: {
-        std::string command = p.name;
-        std::string params = p.payload;
+        std::string command = p.getName();
+        std::string params = p.getPayload();
 
         // Process the command using CommandHandler
         std::string responsePayload;
@@ -42,8 +42,8 @@ void Server::handleMessageReceived(ServerWorker* sender, const protocol& p)
             responsePayload = std::string("Error: ") + ex.what();
         }
 
-        // Create a redsponse protocol message
-        protocol responseProtocol(MessageType::COMMAND_TRANSFER, "Server", responsePayload);
+        // Create a redsponse Protocol message
+        Protocol responseProtocol(MessageType::COMMAND_TRANSFER, "Server", responsePayload);
 
         // Send the response back to the client
         sender->sendData(responseProtocol);
@@ -52,8 +52,8 @@ void Server::handleMessageReceived(ServerWorker* sender, const protocol& p)
 
     case MessageType::MESSAGE_TRANSFER: {
         // Handle general messages
-        QString senderName = QString::fromStdString(p.name);
-        QString message = QString::fromStdString(p.payload);
+        QString senderName = QString::fromStdString(p.getName());
+        QString message = QString::fromStdString(p.getPayload());
 
         emit logMessage(senderName + ": " + message);
         break;
@@ -160,7 +160,7 @@ bool Server::setSslPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algori
 }
 
 
-void Server::setSslProtocol(QSsl::SslProtocol protocol)
+void Server::setSslProtocol(QSsl::SslProtocol Protocol)
 {
-    _sslProtocol = protocol;
+    _sslProtocol = Protocol;
 }
