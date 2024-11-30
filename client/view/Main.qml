@@ -1,11 +1,13 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material
+
 import Client 1.0
 
 // import "styles"
 
 import "pages"
+import "./components/chat"
 
 
 Window {
