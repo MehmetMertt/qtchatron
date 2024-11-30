@@ -8,6 +8,7 @@ import Client 1.0
 import "../components/mainPage"
 import "../components/directMessage"
 import "../components/channels"
+import "../components/chat"
 
 Page {
     id: mainPage
@@ -27,18 +28,26 @@ Page {
         anchors.left: sidebar.right
         anchors.top: parent.top
         anchors.right: parent.right
-        pageTitle: qsTr("Myyy Channel")
-        pageType: qsTr("channel")
+        pageTitle: qsTr("Flo")
+        pageType: qsTr("chat")
 
         onToggleChannelInfobar: () => {
             console.log("toggle")
-            channelPage.toggleInfobarVisibility()
+            //channelPage.toggleInfobarVisibility()
         }
     }
 
     // Main Content Area
-    ChannelPage {
+    /*ChannelPage {
         id: channelPage
+        anchors.left: sidebar.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.top: topbar.bottom
+    }*/
+
+    ChatView {
+        id: chatViewPage
         anchors.left: sidebar.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom

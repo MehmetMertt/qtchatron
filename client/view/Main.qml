@@ -38,7 +38,7 @@ Window {
     StackView {
         id: mainStack
         anchors.fill: parent
-        initialItem: ChatView{}
+        initialItem: mainPage
 
         Component{
             id: mainPage

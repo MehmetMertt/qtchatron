@@ -13,7 +13,6 @@ pragma ComponentBehavior: Bound
 
 Rectangle {
     id: root
-    anchors.fill: parent
     color: "#252328"
 
     property list<ChatMessageItem> chatList: ChatMessageList.chatMessageList
