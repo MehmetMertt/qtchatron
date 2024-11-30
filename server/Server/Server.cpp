@@ -33,11 +33,12 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
     case MessageType::COMMAND_TRANSFER: {
         std::string command = p.getName();
         std::string params = p.getPayload();
-
+        Command cmd(command,params);
         // Process the command using CommandHandler
         std::string responsePayload;
         try {
-            responsePayload = commandHandler.routeCommand(command, params);
+
+            responsePayload = commandHandler.routeCommand(cmd);
         } catch (const std::exception& ex) {
             responsePayload = std::string("Error: ") + ex.what();
         }

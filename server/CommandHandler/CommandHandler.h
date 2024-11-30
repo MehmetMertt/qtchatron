@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <string>
+#include "CommandHandler/command.h"
 
 class CommandHandler : public QObject
 {
@@ -16,7 +17,7 @@ public:
      * @param params The parameters associated with the command.
      * @return The response string.
      */
-    std::string routeCommand(const std::string& command, const std::string& params);
+    std::string routeCommand(const Command& command);
 
 signals:
     /**
