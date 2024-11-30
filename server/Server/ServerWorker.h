@@ -14,7 +14,6 @@ public:
     void sendData(const Protocol& p);
     void receiveData();
 signals:
-    //void jsonReceived(const QJsonObject &jsonDoc);
     void disconnectedFromClient();
     void error();
     void messageReceived(ServerWorker* worker, Protocol receivedProtocol);
