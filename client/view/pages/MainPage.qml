@@ -28,24 +28,25 @@ Page {
         anchors.left: sidebar.right
         anchors.top: parent.top
         anchors.right: parent.right
-        pageTitle: qsTr("Flo")
-        pageType: qsTr("chat")
+        pageTitle: qsTr("Myyy Channel")
+        pageType: qsTr("channel")
 
         onToggleChannelInfobar: () => {
             console.log("toggle")
-            //channelPage.toggleInfobarVisibility()
+            channelPage.toggleInfobarVisibility()
         }
     }
 
     // Main Content Area
-    /*ChannelPage {
+    ChannelPage {
         id: channelPage
         anchors.left: sidebar.right
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.top: topbar.bottom
-    }*/
+    }
 
+    /*
     ChatView {
         id: chatViewPage
         anchors.left: sidebar.right
@@ -53,6 +54,16 @@ Page {
         anchors.bottom: parent.bottom
         anchors.top: topbar.bottom
     }
+    */
 
+    /*
+    DirectMessageOverviewPage {
+        id: dmOverviewPage
+        anchors.left: sidebar.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.top: topbar.bottom
+    }
+*/
 
 }
