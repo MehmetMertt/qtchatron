@@ -7,7 +7,6 @@ import Client 1.0
 // import "styles"
 
 import "pages"
-import "./components/chat"
 
 
 Window {

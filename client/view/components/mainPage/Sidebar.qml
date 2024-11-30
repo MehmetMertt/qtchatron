@@ -4,6 +4,8 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 
+import Client 1.0
+
 import "../channels"
 
 Rectangle {
@@ -26,7 +28,7 @@ Rectangle {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                // show friends page in main area
+                MainPageRouter.setCurrentItem(MainPageRouter.DM_OVERVIEW)
             }
         }
     }

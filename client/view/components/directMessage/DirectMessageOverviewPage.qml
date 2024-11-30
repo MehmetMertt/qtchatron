@@ -3,8 +3,12 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
+import Client 1.0
+
 Item {
     id: dmOverviewPage
+
+    property list<User> userDmList: SessionUser.dmList
 
     Rectangle {
         anchors.fill: parent
@@ -25,7 +29,6 @@ Item {
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-
             ListView {
                 id: dmList
 
@@ -33,13 +36,7 @@ Item {
 
 
                 spacing: 10
-                model: ListModel {
-                    ListElement { name: "Flo" }
-                    ListElement { name: "Mehmet" }
-                    ListElement { name: "Michi" }
-                    ListElement { name: "Martin" }
-                    // Add more channels as needed
-                }
+                model: userDmList
 
                 delegate: Item {
                     width: parent.width  // Ensure it matches ListView width
@@ -50,6 +47,7 @@ Item {
                       spacing: 5
 
                       DirectMessageListItem {
+                          name: dmList.model[index].username
                           Layout.preferredWidth: parent.width - parent.width/10  // Expand to use full width
                           Layout.preferredHeight: 50  // Adjust according to content
                       }

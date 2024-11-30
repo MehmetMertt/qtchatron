@@ -2,10 +2,14 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
+import Client 1.0
+
 import "../user"
 
 Rectangle {
     id: dmListItem
+    required property var name
+
     width: parent.width - parent.width/10
     height: 60
     radius: 10
@@ -35,7 +39,7 @@ Rectangle {
 
         // Text Label
         Text {
-            text: model.name  // Display the channel or user name
+            text: dmListItem.name  // Display the channel or user name
             color: "white"  // Text color
             font.pixelSize: 18  // Adjust font size as needed // Vertically center the text
         }
@@ -49,7 +53,11 @@ Rectangle {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: console.log("Channel clicked: " + model.name)
+        onClicked: {
+            console.log("DM clicked: " + dmListItem.name)
+            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, dmListItem.name)
+            //MainPageRouter.setTopbarTitle(dmListItem.name)
+        }
 
         // Optionally handle hover effect if you want a different color on mouse enter/leave
         /*onMouseAreaClicked: {
