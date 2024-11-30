@@ -34,6 +34,6 @@ QPair<QString, quint16> Client::loadConfiguration() {
 
 void Client::start() {
     auto [address, port] = loadConfiguration();
-    connect(&_communicator, &Communicator::socketEncrypted, this, [this]()->void{emit encryptionSuccess();});
+    connect(&_communicator, &Communicator::socketEncryptionSuccess, this, [this]()->void{emit encryptionSuccess();});
     _communicator.connectToServer(address, port);
 }

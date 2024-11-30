@@ -70,8 +70,6 @@ Window {
         visible: true
 
         initialItem: loginPage
-
-
     }
 
     Component{

@@ -20,13 +20,13 @@ public:
 signals:
     void logMessage(const QString &message);
     void messageReceived(const QString &sender, const QString &message);
+    void socketEncryptionSuccess();
 
 private slots:
     void onEncrypted();
     void onConnected();
     void onReadyRead();
     void error(QAbstractSocket::SocketError socketError);
-    void socketEncrypted(bool encrypted);
 
 private:
     void handleProtocolMessage(const Protocol& p);

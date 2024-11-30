@@ -47,6 +47,7 @@ void Communicator::onConnected()
 void Communicator::onEncrypted()
 {
     qDebug() << "Encrypted connection established.";
+    emit socketEncryptionSuccess();
     sendData(Protocol(MessageType::COMMAND_TRANSFER, "hello", "Hello Server")); //test
 }
 
