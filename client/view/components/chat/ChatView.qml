@@ -7,17 +7,21 @@ import Client 1.0
 
 
 //import "../components/messageItem.qml"
-pragma ComponentBehavior: Bound
-
-
 
 Rectangle {
     id: root
     color: "#252328"
 
-    property list<ChatMessageItem> chatList: ChatMessageList.chatMessageList
+    property list<ChatMessageItem> chatList: MessageModel.messageList
+    property var messageModel: MessageModel
 
-
+    Connections{
+        target: root.messageModel
+        function onSendMessageSuccess() {
+            messageField.text = ""
+            chatListView.currentIndex = chatListView.count - 2
+        }
+    }
 
     Rectangle{
         id: clientChat
@@ -141,7 +145,13 @@ Rectangle {
                                 inputFieldContainer.border.color = "#2A2A2A"  // Default border color when not focused
                             }
                         }
-
+                        Keys.onPressed: (event)=> {
+                            console.log(event.key, Qt.Key_Enter)
+                            if ((event.key+1 == Qt.Key_Enter && event.count == 1)){
+                                console.log("success")
+                                sendButton.sendMessage()
+                            }
+                        }
                         // Dynamically update height based on the number of lines
                         onTextChanged: {
                             // Count the number of lines (using "\n" as line break delimiter)
@@ -151,10 +161,20 @@ Rectangle {
                             //inputFieldContainer.height = Math.min(((lines-1) * 20 + 50), 110);
                             bottomBar.height = Math.min((lines-1)*20 + 80, 180);
                             //console.log(inputFieldContainer.height)
+
+                            root.messageModel.inputMessage = messageField.text
                         }
 
 
+
                     }
+
+                    /*
+                    Shortcut{
+                        sequence: messageField.visible ? "Ctrl+Return" : ""
+                        onActivated: sendButton.sendMessage()
+                    }
+                    */
                 }
 
             }
@@ -189,6 +209,7 @@ Rectangle {
 
             // Send Button
             Rectangle {
+                id: sendButton
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: 45
                 radius: 25
@@ -205,10 +226,19 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        // Handle send action here
+                        sendButton.sendMessage()
                     }
                 }
+
+                function sendMessage(){
+                    if(messageField.text == ""){
+                        return;
+                    }
+                    root.messageModel.sendMessage()
+                    messageField.text = ""
+                }
             }
+
         }
     }
 

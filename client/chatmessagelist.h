@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QtQml>
-
+#include "chatmessageitem.h"
 
 class ChatMessageList : public QObject
 {
@@ -13,6 +13,7 @@ class ChatMessageList : public QObject
     Q_PROPERTY(QList<QObject *> chatMessageList MEMBER _chatMessageList NOTIFY chatMessageListChanged FINAL)
 public:
     explicit ChatMessageList(QObject *parent = nullptr);
+    void add(ChatMessageItem *newItem);
 
     //void setChatList(const QList<MessageItem *> &newChatList);
 
