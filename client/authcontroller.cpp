@@ -1,4 +1,4 @@
-#include "AuthController.h"
+#include "authcontroller.h"
 #include <QDebug>
 
 AuthController::AuthController(QObject *parent)

@@ -1,4 +1,4 @@
-#include "SessionModel.h"
+#include "sessionmodel.h"
 #include <QGlobalStatic>
 
 

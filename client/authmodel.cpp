@@ -1,5 +1,5 @@
-#include "AuthModel.h"
-#include "AuthController.h" // Include the controller header
+#include "authmodel.h"
+#include "authcontroller.h" // Include the controller header
 #include <QDebug>
 
 #include "sessionmodel.h"
