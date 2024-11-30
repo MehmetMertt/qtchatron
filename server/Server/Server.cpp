@@ -24,6 +24,53 @@ void Server::start() {
         qDebug().nospace() << "ERROR: could not bind to " << qPrintable(_address.toString()) << ":" << _port;
 }
 
+void Server::handleMessageReceived(ServerWorker* sender, const protocol& p)
+{
+    Q_ASSERT(sender);
+    qDebug() << "ok";
+            // Handle the message based on its type
+    switch (p.msgType) {
+    case MessageType::COMMAND_TRANSFER: {
+        std::string command = p.name;
+        std::string params = p.payload;
+
+        // Process the command using CommandHandler
+        std::string responsePayload;
+        try {
+            responsePayload = commandHandler.routeCommand(command, params);
+        } catch (const std::exception& ex) {
+            responsePayload = std::string("Error: ") + ex.what();
+        }
+
+        // Create a redsponse protocol message
+        protocol responseProtocol(MessageType::COMMAND_TRANSFER, "Server", responsePayload);
+
+        // Send the response back to the client
+        sender->sendData(responseProtocol);
+        break;
+    }
+
+    case MessageType::MESSAGE_TRANSFER: {
+        // Handle general messages
+        QString senderName = QString::fromStdString(p.name);
+        QString message = QString::fromStdString(p.payload);
+
+        emit logMessage(senderName + ": " + message);
+        break;
+    }
+
+    case MessageType::FILE_TRANSFER: {
+        // Handle file transfers if implemented
+        emit logMessage("File transfer received.");
+        break;
+    }
+
+    default:
+        emit logMessage("Unknown message type received.");
+        break;
+    }
+}
+
 void Server::incomingConnection(qintptr socketDescriptor)
 {
     QSslSocket *sslSocket = new QSslSocket(this);
@@ -50,7 +97,7 @@ void Server::onNewConnection() {
 
     connect(worker, &ServerWorker::disconnectedFromClient, this, std::bind(&Server::userDisconnected, this, worker));
     connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
-    connect(worker, &ServerWorker::jsonReceived, this, std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
+    connect(worker, &ServerWorker::messageReceived,this,&Server::handleMessageReceived);
     connect(worker, &ServerWorker::logMessage, this, &Server::logMessage);
 
     _clients.append(worker);
@@ -59,22 +106,6 @@ void Server::onNewConnection() {
     qDebug() << "New client connected";
 }
 
-
-
-void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
-{
-    Q_ASSERT(destination);
-    destination->sendJson(message);
-}
-
-void Server::jsonReceived(ServerWorker *sender, const QJsonObject &doc)
-{
-    Q_ASSERT(sender);
-    //emit logMessage(QStringLiteral("JSON received ") + QString::fromUtf8(QJsonDocument(doc).toJson()));
-
-    auto response = commandHandler.routeCommand(doc);
-    sendJson(sender, response);
-}
 
 void Server::userDisconnected(ServerWorker *sender)
 {
@@ -119,7 +150,7 @@ bool Server::setSslPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algori
 {
     QFile keyFile("../certs/"+fileName);
 
-       if (!keyFile.open(QIODevice::ReadOnly)) {
+    if (!keyFile.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to open private key file:" << fileName;
         return false;
     }

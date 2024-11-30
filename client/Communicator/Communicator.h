@@ -1,42 +1,40 @@
+// Communicator.h
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
 #include <QObject>
 #include <QSslSocket>
+#include "Protocol/protocol.h"
 
-class QHostAddress;
-class QJsonDocument;
 class Communicator : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(Communicator)
 public:
     explicit Communicator(QObject *parent = nullptr);
-
-public slots:
     void connectToServer(const QString &address, quint16 port);
-    void sendMessage(const QString &text, const QString &command);
     void disconnectFromHost();
 
-private slots:
-    void onReadyRead();
+    // General send function
+    void sendData(const protocol& p);
 
 signals:
-    void connected();
-    void disconnected();
-    void messageReceived(const QString &sender, const QString &text);
+    void logMessage(const QString &message);
+    void messageReceived(const QString &sender, const QString &message);
+
+private slots:
+    void onEncrypted();
+    void onConnected();
+    void onReadyRead();
     void error(QAbstractSocket::SocketError socketError);
 
 private:
+    void handleProtocolMessage(const protocol& p);
+    bool setSslCaCertificate(const QString &path, QSsl::EncodingFormat format = QSsl::Pem);
+    void setSslProtocol(QSsl::SslProtocol protocol);
+
     QSslSocket *_clientSocket;
     QSslCertificate _sslCaCertificate;
     QSsl::SslProtocol _sslProtocol;
-
-    void jsonReceived(const QJsonObject &doc);
-    void onConnected();
-    void onEncrypted();
-    bool setSslCaCertificate(const QString &path, QSsl::EncodingFormat format = QSsl::Pem);
-    void setSslProtocol(QSsl::SslProtocol protocol);
 };
 
 #endif // COMMUNICATOR_H

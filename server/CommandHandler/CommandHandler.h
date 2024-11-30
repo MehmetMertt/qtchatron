@@ -1,32 +1,27 @@
 #ifndef COMMANDHANDLER_H
 #define COMMANDHANDLER_H
 
-#include <QJsonObject>
 #include <QObject>
+#include <string>
 
 class CommandHandler : public QObject
 {
     Q_OBJECT
-
 public:
-    CommandHandler(QObject* parent = nullptr);
+    explicit CommandHandler(QObject* parent = nullptr);
+
     /**
-     * @brief Routes the incoming JSON command to the appropriate handler.
-     * @param jsonObj The JSON object containing the command.
-     * @return A JSON object containing the response.
+     * @brief Processes a command and returns a response.
+     * @param command The command name.
+     * @param params The parameters associated with the command.
+     * @return The response string.
      */
-    QJsonObject routeCommand(const QJsonObject& jsonObj);
+    std::string routeCommand(const std::string& command, const std::string& params);
 
 signals:
-   /**
-     * @brief Emitted when a JSON response is generated.
-     * @param response The JSON object containing the response.
-     */
-    void jsonResponse(const QJsonObject& response);
-    
-        /**
-     * @brief Emitted for logging messages.
-     * @param message The log message.
+    /**
+     * @brief Logs a message.
+     * @param message The message to log.
      */
     void logMessage(const QString& message);
 };

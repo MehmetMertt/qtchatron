@@ -2,6 +2,7 @@
 #define SERVERWORKER_H
 
 #include <QObject>
+#include "Protocol/protocol.h"
 #include <QSslSocket>
 
 class ServerWorker : public QObject
@@ -10,16 +11,17 @@ class ServerWorker : public QObject
     Q_DISABLE_COPY(ServerWorker)
 public:
     explicit ServerWorker(QSslSocket *socket, QObject *parent = nullptr);
-    void sendJson(const QJsonObject &jsonData);
+    void sendData(const protocol& p);
+    void receiveData();
 signals:
-    void jsonReceived(const QJsonObject &jsonDoc);
+    //void jsonReceived(const QJsonObject &jsonDoc);
     void disconnectedFromClient();
     void error();
+    void messageReceived(ServerWorker* worker, protocol receivedProtocol);
     void logMessage(const QString &msg);
 public slots:
     void disconnectFromClient();
 private slots:
-    void receiveJson();
 private:
     QSslSocket *_serverSocket;
 };

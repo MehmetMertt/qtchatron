@@ -16,6 +16,7 @@ class Server : public QTcpServer
 public:
     explicit Server(QHostAddress address = QHostAddress::Any, quint16 port = 45000, QObject *parent = nullptr);
     void start();
+    void handleMessageReceived(ServerWorker* sender, const protocol& p);
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
@@ -27,7 +28,7 @@ public slots:
     void stopServer();
 
 private slots:
-    void jsonReceived(ServerWorker *sender, const QJsonObject &doc);
+   // void jsonReceived(ServerWorker *sender, const QJsonObject &doc);
     void userDisconnected(ServerWorker *sender);
     void userError(ServerWorker *sender);
 

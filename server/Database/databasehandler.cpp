@@ -14,7 +14,7 @@ QString generateRandomString(int length = 15) {
     const int charactersLength = possibleCharacters.length();
 
     QString randomString;
-    randomString.reserve(length); // Reserve memory for better performance
+    randomString.reserve(length); // better performance (stackoverflow)
 
     for (int i = 0; i < length; ++i) {
         int index = QRandomGenerator::global()->bounded(charactersLength);
