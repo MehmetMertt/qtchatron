@@ -7,5 +7,6 @@
         <file>view/pages/MainPage.qml</file>
         <file>view/components/utils/CustomBorder.qml</file>
         <file>view/components/channels/ChannelIcon.qml</file>
+        <file>view/components/chat/ChatView.qml</file>
     </qresource>
 </RCC>

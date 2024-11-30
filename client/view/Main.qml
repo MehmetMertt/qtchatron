@@ -6,6 +6,7 @@ import Client 1.0
 // import "styles"
 
 import "pages"
+import "./components/chat"
 
 
 Window {
@@ -35,7 +36,7 @@ Window {
     StackView {
         id: mainStack
         anchors.fill: parent
-        initialItem: mainPage
+        initialItem: ChatView{}
 
         Component{
             id: mainPage
