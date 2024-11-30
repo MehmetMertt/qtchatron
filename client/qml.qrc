@@ -8,5 +8,6 @@
         <file>view/components/utils/CustomBorder.qml</file>
         <file>view/components/channels/ChannelIcon.qml</file>
         <file>view/components/chat/ChatView.qml</file>
+        <file>view/components/chat/ChatListItem.qml</file>
     </qresource>
 </RCC>
