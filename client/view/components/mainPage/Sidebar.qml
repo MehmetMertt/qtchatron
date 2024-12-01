@@ -18,21 +18,34 @@ Rectangle {
     signal addChannel();
 
     // Friends Icon
-    Rectangle {
+    ToolButton {
         id: friendsIcon
-        width: 50
-        height: 50
-        radius: 30
-        color: "black"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
         anchors.top: parent.top
+
+        height: 50
+        width: 50
+
+        icon.source: "qrc:/icons/contacts_icon.png"  // Replace with an actual path to your icon
+        icon.color: "#FFFFFF"
+        icon.height: 35
+        icon.width: 35
+
+        background: Rectangle {
+            color: "#2A2A2A"  // Button background color
+            radius: width / 2  // Makes the button fully round
+            border.color: MainPageRouter.currentItem == MainPageRouter.DM_OVERVIEW ? "lightgrey" : "transparent"
+            border.width: 1
+        }
 
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                MainPageRouter.setCurrentItem(MainPageRouter.DM_OVERVIEW)
+                if(MainPageRouter.currentItem != MainPageRouter.DM_OVERVIEW) {
+                    MainPageRouter.setCurrentItem(MainPageRouter.DM_OVERVIEW)
+                }
             }
         }
     }

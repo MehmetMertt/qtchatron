@@ -17,6 +17,16 @@ Rectangle {
     required property var index
     property ChannelModel channel: SessionUser.channelList[index]
 
+    Connections {
+        target: MainPageRouter
+        function onTopbarTitleChanged() {
+            if(MainPageRouter.topbarTitle != channelIcon.channel.channelName) {
+                hoverIndicator.visible = false
+                scaleDownAnimation.start()
+            }
+        }
+    }
+
     Text {
         anchors.centerIn: parent
         text: channelIcon.channel.channelName[0] + channelIcon.channel.channelName[1]
@@ -32,7 +42,7 @@ Rectangle {
         color: "white"  // Green indicator
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
-        visible: false  // Initially hidden
+        visible: MainPageRouter.topbarTitle == channelIcon.channel.channelName ? true : false  // Initially hidden
     }
 
     MouseArea {
@@ -48,8 +58,10 @@ Rectangle {
             scaleAnimation.start()
         }
         onExited: {
-            hoverIndicator.visible = false
-            scaleDownAnimation.start()
+            if(MainPageRouter.topbarTitle != channelIcon.channel.channelName) {
+                hoverIndicator.visible = false
+                scaleDownAnimation.start()
+            }
         }
 
     }
