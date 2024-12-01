@@ -9,5 +9,6 @@
         <file>icons/gif2_icon.png</file>
         <file>icons/back_icon.png</file>
         <file>icons/delete_icon.png</file>
+        <file>icons/contacts_icon.png</file>
     </qresource>
 </RCC>

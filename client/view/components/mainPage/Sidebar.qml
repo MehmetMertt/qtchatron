@@ -160,31 +160,66 @@ Rectangle {
         id: profileMenu
         x: sidebar.width + 15
         y: sidebar.height - userIcon.height - 120
+
         Item {
-            width: 200
+            width: parent.width
             height: 50
-            RowLayout {
+            Text {
+                text: SessionUser.user.username
+                font.pixelSize: 20
+                color: Material.foreground
+                leftPadding: 15
+                topPadding: 5
+            }
+        }
+
+        MenuItem {
+
+            background: Rectangle {
+                color: "transparent"
+            }
+
+            contentItem: Text {
+                text: "Settings"
+                font.pixelSize: 16
+                color: settingsItemArea.containsMouse ? "#00A6E0" : "white"
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            MouseArea {
+                id: settingsItemArea
                 anchors.fill: parent
-                spacing: 10
-                Text {
-                    text: SessionUser.user.username
-                    font.pixelSize: 16
-                    color: Material.foreground
-                    Layout.alignment: Qt.AlignLeft
-                    leftPadding: 5
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onClicked: {
+                    console.log("Settings clicked")
                 }
             }
         }
 
         MenuItem {
-            text: "Settings"
-            onTriggered: console.log("Settings clicked")
-        }
 
-        MenuItem {
-            text: "Logout"
-            onTriggered: {
-                console.log("logout clicked")
+            background: Rectangle {
+                color: "transparent"
+            }
+
+            contentItem: Text {
+                text: "Logout"
+                font.pixelSize: 16
+                color: logoutItemArea.containsMouse ? "#00A6E0" : "white"
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            MouseArea {
+                id: logoutItemArea
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onClicked: {
+                    console.log("Logout clicked")
+                }
             }
         }
     }

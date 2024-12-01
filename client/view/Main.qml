@@ -37,7 +37,7 @@ Window {
 
         function onLoadingReadyChanged() {
             //console.log("main loading ready")
-            clientController.runClient()
+            //clientController.runClient()
         }
     }
 
@@ -72,7 +72,7 @@ Window {
         visible: true
 
 
-        initialItem: loadingPage
+        initialItem: mainPage
     }
 
     Component{

@@ -18,7 +18,7 @@ Rectangle {
         // Title
         Text {
             text: "Add a new Chat"
-            font.pixelSize: 24
+            font.pixelSize: 20
             font.bold: true
             font.family: "Roboto"
             color: "#c9c9c9"
@@ -31,7 +31,7 @@ Rectangle {
             placeholderText: "Username"
             topPadding: 10
             bottomPadding: 10
-            font.pixelSize: 18
+            font.pixelSize: 16
             Layout.fillWidth: true
             background: Rectangle {
                 color: "transparent" // Light gray background
@@ -47,37 +47,55 @@ Rectangle {
             spacing: 10
 
             Button {
+                id: cancleButton
                 text: qsTr("Cancel")
                 Layout.fillWidth: true
-                font.pixelSize: 18
+                font.pixelSize: 16
                 flat: true
                 hoverEnabled: true
                 background: Rectangle {
                     color: "transparent"
-                    border.color: "#6d6d6d"
+                    border.color: cancleButtonArea.containsMouse ? "white" : "#6d6d6d"
                     radius: 10
                 }
 
-                onClicked: {
-                    MainPageRouter.closeNewChatPopup()  // Hide the popup
+                MouseArea {
+                    id: cancleButtonArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    onClicked: {
+                        MainPageRouter.closeNewChatPopup()
+                    }
                 }
             }
 
             Button {
+                id: startChatButton
                 text: qsTr("Start Chat")
                 Layout.fillWidth: true
                 font.pixelSize: 18
                 flat: true
                 hoverEnabled: true
+
                 background: Rectangle {
-                    color: "#1E88E5"
+                    color: startChatButtonArea.containsMouse ? "#00A6E0" : "transparent"
+                    border.width: 1
+                    border.color: "#00A6E0"
                     radius: 10
                 }
 
-                onClicked: {
-                    // Implement chat creation logic here
-                    console.log("Starting chat with: " + usernameField.text)
-                    MainPageRouter.closeNewChatPopup()  // Hide the popup after action
+                MouseArea {
+                    id: startChatButtonArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    onClicked: {
+                        console.log("Starting chat with: " + usernameField.text)
+                        MainPageRouter.closeNewChatPopup()
+                    }
                 }
             }
         }
