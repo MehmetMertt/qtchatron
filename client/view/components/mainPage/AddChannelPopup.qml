@@ -6,7 +6,6 @@ import QtQuick.Controls.Basic
 Rectangle {
     id: channelPopupContent
     color: "transparent"
-    anchors.fill: parent
 
     ColumnLayout {
         spacing: 5

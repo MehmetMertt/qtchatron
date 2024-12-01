@@ -56,7 +56,7 @@ Rectangle {
                 background: Rectangle {
                     color: "transparent"
                     border.color: cancleButtonArea.containsMouse ? "white" : "#6d6d6d"
-                    radius: 10
+                    radius: 5
                 }
 
                 MouseArea {
@@ -83,7 +83,7 @@ Rectangle {
                     color: startChatButtonArea.containsMouse ? "#00A6E0" : "transparent"
                     border.width: 1
                     border.color: "#00A6E0"
-                    radius: 10
+                    radius: 5
                 }
 
                 MouseArea {
