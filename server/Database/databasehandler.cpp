@@ -999,16 +999,188 @@ QSharedPointer<DatabaseResponse> databaseHandler::logoutUserByID(const QString& 
 }
 
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QCoreApplication>
+#include <QDebug>
+#include <QStringList>
+#include <QFile>
+#include <QTextStream>
+
 QSqlError initDb()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    qDebug() << QCoreApplication::applicationDirPath();
-    db.setDatabaseName(QCoreApplication::applicationDirPath() + "/database.db");
+    QString dbPath = QCoreApplication::applicationDirPath() + "/database.db";
+    qDebug() << "Database path:" << dbPath;
+    db.setDatabaseName(dbPath);
 
     if (!db.open())
         return db.lastError();
 
-    return QSqlError();
+    // Updated SQL script with IF NOT EXISTS
+    QString sqlScript = R"(
+        -- Users definition
+
+        CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username VARCHAR(255) UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL, -- Stored hashed password
+            password_salt TEXT NOT NULL, -- Individual salt for the user
+            profile_info TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_users_username ON Users(username);
+
+
+        -- AuthTokens definition
+
+        CREATE TABLE IF NOT EXISTS AuthTokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL, -- References the user
+            token TEXT NOT NULL, -- Authentication token
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Token creation time
+            expires_at TIMESTAMP NOT NULL, -- Token expiration time
+            FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_auth_tokens_user_id ON AuthTokens(user_id);
+        CREATE INDEX IF NOT EXISTS idx_auth_tokens_token ON AuthTokens(token);
+
+
+        -- Channels definition
+
+        CREATE TABLE IF NOT EXISTS Channels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(255) NOT NULL,
+            type TEXT CHECK(type IN ('text', 'voice')) DEFAULT 'text',
+            access_type TEXT CHECK(access_type IN ('public', 'private')) DEFAULT 'public',
+            invite_link VARCHAR(255),
+            admin_id INTEGER, -- Foreign key for the admin user
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (admin_id) REFERENCES Users (id) ON DELETE SET NULL
+        );
+
+
+        -- ChannelUser definition
+
+        CREATE TABLE IF NOT EXISTS ChannelUser (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            FOREIGN KEY (channel_id) REFERENCES Channels(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+        );
+
+
+        -- DirectMessages definition
+
+        CREATE TABLE IF NOT EXISTS DirectMessages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sender_id INTEGER NOT NULL,
+            receiver_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_read BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (sender_id) REFERENCES Users(id) ON DELETE CASCADE,
+            FOREIGN KEY (receiver_id) REFERENCES Users(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_direct_messages_sender_receiver ON DirectMessages(sender_id, receiver_id);
+
+
+        -- Threads definition
+
+        CREATE TABLE IF NOT EXISTS Threads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_id INTEGER NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            created_by INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (channel_id) REFERENCES Channels(id) ON DELETE CASCADE,
+            FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE CASCADE
+        );
+
+
+        -- ChannelMessages definition
+
+        CREATE TABLE IF NOT EXISTS ChannelMessages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (channel_id) REFERENCES Channels(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_channel_messages_channel_user ON ChannelMessages(channel_id, user_id);
+
+
+        -- ThreadMessages definition
+
+        CREATE TABLE IF NOT EXISTS ThreadMessages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            thread_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (thread_id) REFERENCES Threads(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_threadmessages_thread ON ThreadMessages(thread_id);
+    )";
+
+    // Remove comments and parse the SQL script into statements
+    QStringList sqlStatements;
+    QString currentStatement;
+    QTextStream stream(&sqlScript);
+    while (!stream.atEnd()) {
+        QString line = stream.readLine();
+        // Remove comments
+        int commentIndex = line.indexOf("--");
+        if (commentIndex != -1) {
+            line = line.left(commentIndex);
+        }
+        line = line.trimmed();
+        if (line.isEmpty()) {
+            continue;
+        }
+        currentStatement += line + ' ';
+        if (line.endsWith(';')) {
+            sqlStatements.append(currentStatement);
+            currentStatement.clear();
+        }
+    }
+
+    QSqlQuery query(db);
+
+    // Begin a transaction for atomicity
+    if (!db.transaction()) {
+        return db.lastError();
+    }
+
+    // Execute each SQL statement
+    for (const QString& statement : sqlStatements) {
+        QString trimmedStatement = statement.trimmed();
+        if (trimmedStatement.isEmpty()) {
+            continue;
+        }
+        qDebug() << "Executing SQL statement:" << trimmedStatement;
+        if (!query.exec(trimmedStatement)) {
+            qDebug() << "Error executing statement:" << query.lastError().text();
+            db.rollback(); // Rollback if any statement fails
+            return query.lastError();
+        }
+    }
+
+    // Commit the transaction if all statements succeeded
+    if (!db.commit()) {
+        return db.lastError();
+    }
+
+    return QSqlError(); // No error
 }
 
 
