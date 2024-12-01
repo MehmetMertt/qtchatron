@@ -35,6 +35,63 @@ QSqlDatabase databaseHandler::getDatabase() {
 }
 
 
+/**
+ * \brief Sends message to a thread
+ *
+ * This function takes the threadID, userID and message and inserts into the database
+ *
+ * \param threadID ID of the thread
+ * \param userID ID of the user
+ * \param message Message to send
+ * \return returns QSharedPointer<DatabaseResponse> Object
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToThread(const QString& threadID,const QString& userID,const QString& message) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    /*
+    if(!isUserInChannel(userID,channelID)){
+        dbr->setMessage("User is not member of this channel");
+        return dbr;
+    }
+    */
+
+    if(message.length() <= 0){
+        dbr->setMessage("Message cannot be empty");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        INSERT INTO ThreadMessages
+        (thread_id, user_id, content)
+        VALUES(:thread_id, :user_id, :content);
+    )");
+    query.bindValue(":thread_id", threadID);
+    query.bindValue(":user_id", userID);
+    query.bindValue(":content", message);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    if (query.numRowsAffected() > 0) {
+        dbr->setMessage("Message successfully sent.");
+        dbr->setSuccess(true);
+    } else {
+        dbr->setMessage("Insertion succeeded, but no rows were affected.");
+    }
+    return dbr;
+}
+
 
 QSharedPointer<DatabaseResponse> databaseHandler::getThreadsFromChannel(const QString& channelID) {
     QSqlDatabase db = getDatabase();

@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   //  dbr = dbHandler->createThread("2","asddwdf","3");
 
     //qDebug() << dbr->message();
-
+/*
     qDebug() << "2";
 
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
     dbr = dbHandler->getThreadsFromChannel("1337");
     qDebug() << dbr->message();
-
+*/
 
    // QString token = dbr->message();
     //qDebug() << "token: " << token;
@@ -110,6 +110,22 @@ int main(int argc, char *argv[])
     qDebug() << dbr->message();
 */
 
+    qDebug() << "1";
+    dbr = dbHandler->sendMessageToThread("1","1","okkkk");
+    qDebug() << dbr->message();
+
+
+    qDebug() << "2";
+    dbr = dbHandler->sendMessageToThread("1","2","dwsdwd");
+    qDebug() << dbr->message();
+
+    qDebug() << "3";
+    dbr = dbHandler->sendMessageToThread("1","1","okkkk");
+    qDebug() << dbr->message();
+
+    qDebug() << "4";
+    dbr = dbHandler->sendMessageToThread("1","1","");
+    qDebug() << dbr->message();
     Server server;
     server.start();
 
