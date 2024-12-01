@@ -221,8 +221,11 @@ Rectangle {
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: 45
                 radius: 25
-                color: "#1E88E5"
+                color: sendButtonArea.containsMouse && messageValid() ? "#1E88E5" : "transparent"
+                border.color: messageValid() ? "#1E88E5" : "grey"
+                border.width: 1
                 Layout.alignment: Qt.AlignVCenter
+
 
                 Image {
                     anchors.centerIn: parent
@@ -232,22 +235,29 @@ Rectangle {
                 }
 
                 MouseArea {
+                    id: sendButtonArea
                     anchors.fill: parent
+                    cursorShape: parent.messageValid() ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    hoverEnabled: true
                     onClicked: {
                         sendButton.sendMessage()
                     }
                 }
 
                 function sendMessage(){
-                    let trimmedMessage = messageField.text.trim();  // Remove leading and trailing whitespace
-
-                    // Check if the message is empty after trimming
-                    if(trimmedMessage === "") {
+                    if(!messageValid()) {
                         return;  // Don't send if the message is empty
                     }
-                    root.messageModel.inputMessage = trimmedMessage
+                    root.messageModel.inputMessage = trimmedMessage()
                     root.messageModel.sendMessage()
                     messageField.text = ""
+                }
+
+                function messageValid(){
+                    return trimmedMessage() !== ""
+                }
+                function trimmedMessage() {
+                    return messageField.text.trim()
                 }
             }
 
