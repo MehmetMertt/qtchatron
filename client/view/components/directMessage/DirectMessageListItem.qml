@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls.Material
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 import "../user"
 
@@ -24,6 +25,9 @@ Rectangle {
 
         onClicked: {
             console.log("DM clicked: " + dmListItem.user.username)
+            console.log(ClientData.SessionUser.getUserFromDmListByUsername(dmListItem.user.username))
+            ChatModel.setReceivingUser(dmListItem.user.username)
+            console.log(ChatModel.receivingUser)
             MainPageRouter.setCurrentItem(MainPageRouter.CHAT, dmListItem.user.username)
         }
 

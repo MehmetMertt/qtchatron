@@ -48,8 +48,20 @@ std::string CommandHandler::routeCommand(const Command& command)
             qWarning() << "Ungültiges JSON-Format!";
         }
         response = "enter username";
-    }
-    else {
+    } else if(cmd == "check_user_exists") {
+        QString username = QString::fromStdString(params);
+
+        //auto dbResponse = _dbHandler->checkIfUserExists(username);
+
+        QJsonObject responseObject;
+        responseObject["success"] = true; //dbResponse->success();
+        responseObject["message"] = "22"; //dbResponse->message();
+
+        QJsonDocument responseJsonDoc(responseObject);
+
+        return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+
+    } else {
         // Handle unknown commands
         QString qCommand = QString::fromStdString(cmd);
         emit logMessage("Unknown command: " + qCommand);
@@ -61,9 +73,19 @@ std::string CommandHandler::routeCommand(const Command& command)
 
 QString CommandHandler::getCommandResponseName(const Command &command)
 {
-    if(command.command() == "login_request" || command.command() == "signup_request") {
-        return "auth_response";
+
+    if(command.command() == "login_request") {
+        return "login_response";
+    } else if(command.command() == "signup_request") {
+        return "signup_response";
+    } else if(command.command() == "check_user_exists") {
+        return "check_user_exists_response";
     } else {
         return "unknown response";
     }
+}
+
+databaseHandler *CommandHandler::dbHandler()
+{
+    return _dbHandler;
 }

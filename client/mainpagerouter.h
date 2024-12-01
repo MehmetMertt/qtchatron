@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE void triggerBack();
     Q_INVOKABLE void closeNewChatPopup();
     Q_INVOKABLE void setShowChannelInfo(bool newShowChannelInfo);
+    Q_INVOKABLE void setSelectedPageID(int newSelectedPageID);
 
     QString topbarTitle() const;
     QString topbarType() const;
@@ -37,7 +38,7 @@ public:
 
 
     int selectedPageID() const;
-    void setSelectedPageID(int newSelectedPageID);
+
 
 private:
     MainArea _currentItem;

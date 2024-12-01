@@ -43,6 +43,26 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
             responsePayload = std::string("Error: ") + ex.what();
         }
 
+
+        if(command == "login_request") {
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(QString::fromStdString(responsePayload).toUtf8());
+
+            // Überprüfen, ob das Dokument gültiges JSON enthält
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+                QJsonObject jsonObject = jsonDoc.object();
+
+                bool success = jsonObject["success"].toBool();
+                QString message = jsonObject["message"].toString();
+
+                if(success) {
+                    int userID = commandHandler.dbHandler()->getIDByToken(message)->message().toInt();
+                    qDebug() << "set worker id: " << userID;
+                    sender->setUserID(userID);
+                }
+            }
+        }
+
+
         // Create a redsponse Protocol message
         Protocol responseProtocol(MessageType::COMMAND_TRANSFER, commandHandler.getCommandResponseName(cmd).toStdString(), responsePayload);
 
@@ -53,10 +73,61 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
 
     case MessageType::MESSAGE_TRANSFER: {
         // Handle general messages
-        QString senderName = QString::fromStdString(p.getName());
-        QString message = QString::fromStdString(p.getPayload());
+        QString command = QString::fromStdString(p.getName());
+        QString params = QString::fromStdString(p.getPayload());
 
-        emit logMessage(senderName + ": " + message);
+        if(command == "send_dm") {
+
+            // Konvertiere den QString in ein QJsonDocument
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(params.toUtf8());
+
+            // Überprüfen, ob das Dokument gültiges JSON enthält
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+                QJsonObject jsonObject = jsonDoc.object();
+
+                QString senderToken = jsonObject["senderToken"].toString();
+                int receiverId = jsonObject["receiverId"].toInt();
+                QString message = jsonObject["message"].toString();
+
+                QJsonObject sendToReceiverObj;
+                sendToReceiverObj["senderId"] = commandHandler.dbHandler()->getIDByToken(senderToken)->message().toInt(); //dbResponse->success();
+                sendToReceiverObj["message"] = message; //dbResponse->message();
+
+                QJsonDocument sendToReceiverJsonDoc(sendToReceiverObj);
+
+                std::string sendToReceiverPayload = QString(sendToReceiverJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+
+
+                for (ServerWorker* worker : _clients) {
+                    qDebug() << "worker: " << worker->userID();
+                    if (worker && worker->userID() == receiverId) { // Annahme: getUserId() gibt die User-ID zurück
+                        Protocol sendToReceiverProtocol(MessageType::MESSAGE_TRANSFER, "send_dm", sendToReceiverPayload);
+                        worker->sendData(sendToReceiverProtocol); // sendData schickt die Nachricht
+                        qDebug() << "send to receiver: " << worker->userID();
+                        return; // Sobald der Worker gefunden wurde, beende die Suche
+                    }
+                }
+
+                //commandHandler.dbHandler()->setMessage();
+
+                QJsonObject responseObject;
+                responseObject["success"] = true; //dbResponse->success();
+                responseObject["message"] = "message saved"; //dbResponse->message();
+
+                QJsonDocument responseJsonDoc(responseObject);
+
+                std::string responsePayload = QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+
+
+                // Create a redsponse Protocol message
+                Protocol responseProtocol(MessageType::MESSAGE_TRANSFER, "send_dm_response", responsePayload);
+
+                // Send the response back to the client
+                sender->sendData(responseProtocol);
+            }
+        }
+
+        //emit logMessage(senderName + ": " + message);
         break;
     }
 

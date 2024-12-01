@@ -1,16 +1,17 @@
-import QtQuick
-import QtQuick.Controls
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Layouts
-import QtQuick.Controls.Material
+import QtQuick.Controls.Material 2.15
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 pragma ComponentBehavior: Bound
 
 Item {
     id: dmOverviewPage
 
-    property list<User> userDmList: SessionUser.dmList
+    property list<User> userDmList: ClientData.SessionUser.dmList
 
     Rectangle {
         anchors.fill: parent

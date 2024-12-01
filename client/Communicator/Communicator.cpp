@@ -121,29 +121,46 @@ void Communicator::handleProtocolMessage(const Protocol& p)
 {
     switch (p.getMsgType()) {
     case MessageType::MESSAGE_TRANSFER:
+        if(p.getName() == "send_dm_response") {
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                emit sendMessageResponse(success, message);
+            }
+        }
         emit messageReceived(QString::fromStdString(p.getName()), QString::fromStdString(p.getPayload()));
         break;
     case MessageType::COMMAND_TRANSFER:
         // implement command_transfer
 
-        if(p.getName() == "auth_response") {
+        if(p.getName() == "login_response" || p.getName() == "auth_response") {
 
-            QString jsonQString = QString::fromStdString(p.getPayload());
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
 
-            // Konvertiere den QString in ein QJsonDocument
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
 
-            // Überprüfen, ob das Dokument gültiges JSON enthält
-            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-                QJsonObject jsonObject = jsonDoc.object();
+                emit authResponseReceived(success, message, p.getName() == "login_response");
+            }
+
+        } else if(p.getName() == "check_user_exists_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
 
                 // Zugriff auf die Werte
                 bool success = jsonObject["success"].toBool(false);
                 QString message = jsonObject["message"].toString("An unexpected error occured!");
 
-                emit authResponseReceived(success, message);
+                emit chatCreationResponse(success, message, message.toInt());
             }
-
         }
 
         emit logMessage("Command response received: " + QString::fromStdString(p.getPayload()));
@@ -156,6 +173,16 @@ void Communicator::handleProtocolMessage(const Protocol& p)
         emit logMessage("Unknown message type received.");
         break;
     }
+}
+
+QJsonObject Communicator::parseJsonPayload(const std::string& payload) {
+    QString jsonQString = QString::fromStdString(payload);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+    if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+        return jsonDoc.object(); // Return the parsed JSON object
+    }
+    return {}; // Return an empty QJsonObject if parsing fails
 }
 
 void Communicator::error(QAbstractSocket::SocketError socketError)

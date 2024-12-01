@@ -5,6 +5,7 @@
 
 #include "Communicator/Communicator.h"
 #include "Protocol/protocol.h"
+#include "sessionuser.h"
 
 AuthController::AuthController(QObject *parent)
     : QObject(parent)
@@ -27,6 +28,7 @@ void AuthController::login(const QString &username, const QString &password,
     //qDebug() << "Authenticating login with username:" << username;
 
     _authCallback = callback;
+    _username = username;
 
     auto *communicator = Communicator::getInstance();
     disconnect(communicator, &Communicator::authResponseReceived, this, &AuthController::handleAuthResponseCallback);
@@ -35,15 +37,9 @@ void AuthController::login(const QString &username, const QString &password,
 
     communicator->sendData(Protocol(MessageType::COMMAND_TRANSFER, "login_request", this->dataToJsonString(username, password)));
 
-    // Simulate backend call
-   /* if (username == "admin" && password == "password") {
-        callback(true, "Login successful");
-    } else {
-        callback(false, "Invalid username or password");
-    }*/
 }
 
-void AuthController::handleAuthResponseCallback(const bool success, const QString message)
+void AuthController::handleAuthResponseCallback(const bool success, const QString message, const int authLogin)
 {
     //qDebug() << "login response: " << success << ": " << message;
 
@@ -51,6 +47,14 @@ void AuthController::handleAuthResponseCallback(const bool success, const QStrin
 
     if(message.contains("unexpected")) {
         callbackMessage = "An unexpected error occured";
+    }
+
+    qDebug() << authLogin;
+
+    if(success && authLogin) {
+        qDebug() << "setting new user";
+        SessionUser::getInstance()->setUser(new User(_username));
+        SessionUser::getInstance()->setToken(message);
     }
 
     if (_authCallback) {

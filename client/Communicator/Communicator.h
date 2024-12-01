@@ -30,7 +30,9 @@ signals:
     void logMessage(const QString &message);
     void messageReceived(const QString &sender, const QString &message);
     void socketEncryptionSuccess();
-    void authResponseReceived(const bool success, const QString message);
+    void authResponseReceived(const bool success, const QString message, const int authLogin);
+    void chatCreationResponse(const bool success, const QString message, const int receiverUserId);
+    void sendMessageResponse(const bool success, const QString message);
 
 private slots:
     void onEncrypted();
@@ -42,6 +44,8 @@ private:
     Communicator(QObject *parent = nullptr);
     Communicator(const Communicator&) = delete; // Prevent copy constructor
     Communicator& operator=(const Communicator&) = delete; // Prevent copy assignment
+
+    QJsonObject parseJsonPayload(const std::string& payload);
 
     static Communicator* instance;
     static std::mutex mtx;

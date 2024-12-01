@@ -2,27 +2,28 @@
 
 #include "channelmodel.h"
 
+#include "Communicator/Communicator.h"
+#include "Protocol/protocol.h"
+
+SessionUser* SessionUser::instance = nullptr;
+std::mutex SessionUser::mtx;
+
 SessionUser::SessionUser(QObject *parent)
     : QObject{parent},
-    _user(new User("Flo"))
+    _user(new User()),
+    _dmList(QList<QObject *>()),
+    _channelList(QList<QObject *>())
 {
-    _dmList.append(new User("Mehmet"));
-    _dmList.append(new User("Michi"));
-    _dmList.append(new User("Martin"));
-    _dmList.append(new User("User1"));
+}
 
-    _channelList.append(new ChannelModel("MyChannel"));
-    _channelList.append(new ChannelModel("Yooo"));
-    _channelList.append(new ChannelModel("Group21"));
-    _channelList.append(new ChannelModel("FH"));
-    _channelList.append(new ChannelModel("This is a sick Channel"));
-    _channelList.append(new ChannelModel("One More"));
-    _channelList.append(new ChannelModel("MyChannel"));
-    _channelList.append(new ChannelModel("Yooo"));
-    _channelList.append(new ChannelModel("Group21"));
-    _channelList.append(new ChannelModel("FH"));
-    _channelList.append(new ChannelModel("This is a sick Channel"));
-    _channelList.append(new ChannelModel("One More"));
+QString SessionUser::token() const
+{
+    return _token;
+}
+
+void SessionUser::setToken(const QString &newToken)
+{
+    _token = newToken;
 }
 
 
@@ -35,6 +36,45 @@ SessionUser::SessionUser(QObject *parent)
     _dmList.append(new User("Martin"));
     _dmList.append(new User("User1"));
 }*/
+
+void SessionUser::processChatCreation(QString username)
+{
+    auto *communicator = Communicator::getInstance();
+    disconnect(communicator, &Communicator::chatCreationResponse, this, &SessionUser::handleChatCreationResponse);
+    connect(communicator, &Communicator::chatCreationResponse, this, &SessionUser::handleChatCreationResponse);
+
+    this->instance->_chatCreationUsername = username;
+
+    communicator->sendData(Protocol(COMMAND_TRANSFER, "check_user_exists", username.toStdString()));
+
+}
+
+void SessionUser::handleChatCreationResponse(const bool success, const QString message, const int receiverUserId)
+{
+    qDebug() << "chat creation respons: " << success << ": " << message << ": " << receiverUserId;
+    if(success) {
+        auto newUser = new User(this->instance->_chatCreationUsername, receiverUserId);
+        this->instance->_dmList.append(newUser);
+        qDebug("emit");
+        emit this->instance->chatCreationSuccess(this->instance->_chatCreationUsername, this->instance->_dmList.indexOf(newUser));
+    } else {
+        emit this->instance->chatCreationFailure(message);
+    }
+}
+
+User *SessionUser::getUserFromDmListByUsername(QString username)
+{
+    for (QObject* obj : _dmList) { // Iterate over the list
+        User* user = qobject_cast<User*>(obj); // Cast QObject* to User*
+        qDebug() << user->username();
+        if (user && user->username() == username) { // Check if the cast succeeded and the username matches
+            qDebug() << "found";
+            return user;
+        }
+    }
+    return nullptr;
+}
+
 
 QList<QObject *> SessionUser::dmList() const
 {
@@ -52,6 +92,13 @@ void SessionUser::setDmList(const QList<QObject *> &newDmList)
 User *SessionUser::user() const
 {
     return _user;
+}
+
+void SessionUser::setUser(User *newUser)
+{
+    qDebug() << "new user set: " << newUser->username();
+    _user = newUser;
+    emit userChanged();
 }
 
 QList<QObject *> SessionUser::channelList() const
