@@ -6,6 +6,7 @@ Rectangle {
     id: userIcon
 
     property var initial: "P"
+    property double scaleI: 1
 
     width: 45
     height: 45
@@ -17,7 +18,7 @@ Rectangle {
         id: initialText
         text: userIcon.initial // Placeholder for profile initial or icon
         color: "white"
-        font.pixelSize: 24
+        font.pixelSize: 24 * userIcon.scaleI
         anchors.centerIn: parent
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter

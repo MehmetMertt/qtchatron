@@ -4,10 +4,14 @@ import QtQuick.Controls.Material
 
 import "../user"
 
+import Client 1.0
+
 Rectangle {
     id: channelInfobar
     width: 225
     color: "#232226" //bit darker dark
+
+    property list<User> memberList: ChannelModel.memberList
 
     //Border
     Rectangle {
@@ -49,18 +53,14 @@ Rectangle {
 
 
                 ListView {
-                    id: memberList
+                    id: memberListView
                     anchors.left: parent.left
                     spacing: 5
-                    model: ListModel {
-                        ListElement { name: "Flo" }
-                        ListElement { name: "Mehmet" }
-                        ListElement { name: "Michi" }
-                        ListElement { name: "Martin" }
-                        // Add more channels as needed
-                    }
+                    model: channelInfobar.memberList
 
-                    delegate: UserCard {}
+                    delegate: UserCard {
+
+                    }
                 }
             }
         }

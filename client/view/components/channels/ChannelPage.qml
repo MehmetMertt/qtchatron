@@ -6,9 +6,13 @@ import QtQuick.Effects
 
 import "../chat"
 
+import Client 1.0
+
 Rectangle {
     id: channelPage
     color: "#252328"
+
+    property ChannelModel channelModel: ChannelModel
 
     property bool isChannelInfobarVisible: true
     function toggleInfobarVisibility() {

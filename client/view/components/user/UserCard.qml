@@ -10,7 +10,9 @@ Rectangle {
     color: "transparent"
     width: parent.width
 
-    property var initial: "P"
+    required property var index
+    property User user: ChannelModel.memberList[index]
+
 
     Rectangle {
         id: background
@@ -31,6 +33,8 @@ Rectangle {
 
         // User Icon (e.g., Avatar or Image)
         UserIcon {
+            scaleI: 0.8
+            initial: userCard.user.getInitials()
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter  // Vertically center the icon
             Layout.preferredHeight: 30
             Layout.preferredWidth: 30
@@ -38,7 +42,7 @@ Rectangle {
 
         // Text Label
         Text {
-            text: model.name  // Display the channel or user name
+            text: userCard.user.username  // Display the channel or user name
             color: "white"  // Text color
             font.pixelSize: 16  // Adjust font size as needed // Vertically center the text
         }
@@ -53,8 +57,8 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onClicked: {
-            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, model.name)
-            console.log("Channel clicked: " + model.name)
+            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, userCard.user.username)
+            console.log("Channel clicked: " + userCard.user.username)
         }
 
         // Optionally handle hover effect if you want a different color on mouse enter/leave

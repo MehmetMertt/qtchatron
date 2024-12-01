@@ -36,6 +36,7 @@ Page {
 
         onToggleChannelInfobar: {
             console.log("toggle")
+
         }
 
         onNewChatClicked: {
