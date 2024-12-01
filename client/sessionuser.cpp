@@ -14,6 +14,8 @@ SessionUser::SessionUser(QObject *parent)
     _dmList(QList<QObject *>()),
     _channelList(QList<QObject *>())
 {
+    auto *communicator = Communicator::getInstance();
+    connect(communicator, &Communicator::receivedMessageFromOtherUser, this, &SessionUser::handleReceivedMessageFromOtherUser);
 }
 
 QString SessionUser::token() const
@@ -62,12 +64,37 @@ void SessionUser::handleChatCreationResponse(const bool success, const QString m
     }
 }
 
+void SessionUser::handleReceivedMessageFromOtherUser(const int senderId, const QString message)
+{
+    qDebug() << "message received from: " << senderId;
+    auto sender = this->getUserFromDmListById(senderId);
+    auto timee = std::time(nullptr);
+    auto tm = *std::localtime(&timee);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
+    QString timeString = QString::fromStdString(oss.str());
+    sender->addMessage(new ChatMessageItem(sender->username(), message, timeString));
+}
+
 User *SessionUser::getUserFromDmListByUsername(QString username)
 {
     for (QObject* obj : _dmList) { // Iterate over the list
         User* user = qobject_cast<User*>(obj); // Cast QObject* to User*
         qDebug() << user->username();
         if (user && user->username() == username) { // Check if the cast succeeded and the username matches
+            qDebug() << "found";
+            return user;
+        }
+    }
+    return nullptr;
+}
+
+User *SessionUser::getUserFromDmListById(int userId)
+{
+    for (QObject* obj : _dmList) { // Iterate over the list
+        User* user = qobject_cast<User*>(obj); // Cast QObject* to User*
+        qDebug() << user->userId();
+        if (user && user->userId() == userId) { // Check if the cast succeeded and the username matches
             qDebug() << "found";
             return user;
         }

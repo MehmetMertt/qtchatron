@@ -51,11 +51,11 @@ std::string CommandHandler::routeCommand(const Command& command)
     } else if(cmd == "check_user_exists") {
         QString username = QString::fromStdString(params);
 
-        //auto dbResponse = _dbHandler->checkIfUserExists(username);
+        auto dbResponse = _dbHandler->checkIfUserExists(username);
 
         QJsonObject responseObject;
-        responseObject["success"] = true; //dbResponse->success();
-        responseObject["message"] = "22"; //dbResponse->message();
+        responseObject["success"] = dbResponse->success();
+        responseObject["message"] = dbResponse->message();
 
         QJsonDocument responseJsonDoc(responseObject);
 

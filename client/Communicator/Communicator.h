@@ -33,6 +33,7 @@ signals:
     void authResponseReceived(const bool success, const QString message, const int authLogin);
     void chatCreationResponse(const bool success, const QString message, const int receiverUserId);
     void sendMessageResponse(const bool success, const QString message);
+    void receivedMessageFromOtherUser(const int senderId, const QString message);
 
 private slots:
     void onEncrypted();

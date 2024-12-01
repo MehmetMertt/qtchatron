@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
 
+import ClientObjects 1.0 as ClientData
+
 Item {
     id: itemRoot
     width: parent ? parent.width : 0  // Match ListView width
@@ -15,7 +17,7 @@ Item {
     property int index: model.index
 
     // Determine if the sender is the current user (e.g., "michi")
-    property bool isCurrentUser: sender === "michi"
+    property bool isCurrentUser: sender === ClientData.SessionUser.user.username
 
     // Align message based on sender
 

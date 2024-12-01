@@ -31,8 +31,10 @@ public:
     Q_INVOKABLE void processChatCreation(QString username);
 
     void handleChatCreationResponse(const bool success, const QString message, const int receiverUserId);
+    void handleReceivedMessageFromOtherUser(const int senderId, const QString message);
 
     Q_INVOKABLE User* getUserFromDmListByUsername(QString username);
+    User* getUserFromDmListById(int userId);
     QList<QObject *> dmList() const;
     void setDmList(const QList<QObject *> &newDmList);
 

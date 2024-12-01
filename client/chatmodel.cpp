@@ -48,7 +48,7 @@ void ChatModel::sendMessage(){
     std::ostringstream oss;
     oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
     QString timeString = QString::fromStdString(oss.str());
-    _receivingUser->addMessage(new ChatMessageItem("michi", _inputMessage, timeString));
+    _receivingUser->addMessage(new ChatMessageItem(SessionUser::getInstance()->user()->username(), _inputMessage, timeString));
     emit messageListChanged();
     emit sendMessageSuccess();
 }

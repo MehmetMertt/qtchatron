@@ -119,8 +119,10 @@ void Communicator::onReadyRead()
 
 void Communicator::handleProtocolMessage(const Protocol& p)
 {
+    qDebug() << "wtf is happening";
     switch (p.getMsgType()) {
     case MessageType::MESSAGE_TRANSFER:
+        qDebug() << "wtf das ist scheise: " << p.getName();
         if(p.getName() == "send_dm_response") {
             QJsonObject jsonObject = parseJsonPayload(p.getPayload());
 
@@ -130,6 +132,20 @@ void Communicator::handleProtocolMessage(const Protocol& p)
                 QString message = jsonObject["message"].toString("An unexpected error occured!");
 
                 emit sendMessageResponse(success, message);
+            }
+        } else if(p.getName() == "send_dm") {
+            qDebug() << "got dm";
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                int senderId = jsonObject["senderId"].toInt(-1);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                qDebug() << "notify session user";
+                emit receivedMessageFromOtherUser(senderId, message);
+            } else {
+                qDebug() << "json parse Error";
             }
         }
         emit messageReceived(QString::fromStdString(p.getName()), QString::fromStdString(p.getPayload()));
