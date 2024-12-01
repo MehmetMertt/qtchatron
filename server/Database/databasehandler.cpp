@@ -27,10 +27,68 @@ QString generateRandomString(int length = 15) {
 
 
 
+
 QSqlDatabase databaseHandler::getDatabase() {
     return QSqlDatabase::database();
 }
 
+
+/**
+ * \brief Creates a Channel
+ *
+ * Takes the name, type and access_type as parameter and insert the channel into the database
+ *
+ * \param name name of the channel
+ * \param type type of the channel (either voice or text)
+ * \param isPublic either true to have a public channel or false to have a private channel
+
+ * \return returns QSharedPointer<DatabaseResponse> with success and if private -> invite link
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::createThread(const QString& channelID,const QString& title,const QString& userID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+
+    if(title.length() <= 0){
+        dbr->setMessage("Title cannot be empty");
+        return dbr;
+    }
+
+    if(!isUserInChannel(userID, channelID)){
+        dbr->setMessage("User is not member of channel");
+        return dbr;
+    }
+
+    query.prepare(R"(
+        INSERT INTO Threads
+        (channel_id, title, created_by)
+        VALUES(:channel_id, :title, :created_by);
+    )");
+
+    query.bindValue(":channel_id", channelID);
+    query.bindValue(":title", title);
+    query.bindValue(":created_by", userID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+    if (query.numRowsAffected() > 0) {
+        dbr->setMessage("Thread successfully creeated.");
+        dbr->setSuccess(true);
+    } else {
+        dbr->setMessage("Insertion succeeded, but no rows were affected.");
+    }
+    return dbr;
+}
 
 
 
@@ -84,7 +142,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QStrin
     if(query.next()) {
             dbr->setSuccess(true);
             QString id = query.value("id").toString();
-            dbr->setMessage("id:"+id);
+            dbr->setMessage(id);
             return dbr;
     }
 
