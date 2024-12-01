@@ -92,10 +92,62 @@ QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QStrin
     return dbr;
 }
 
-/*
 
+
+/**
+ * \brief Gets all DIrect Messages between two UserID's
  *
- * */
+ * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
+ *
+ * \param id ID of the first user
+ * \param id ID of the second user
+ * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::getChannelsFromUser(const QString& userID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT channel_id
+        FROM ChannelUser where user_id = :user_id;
+    )");
+    query.bindValue(":user_id", userID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        //   messageObject["chat_id"] = query.value("id").toString();
+        messageObject["channel_id"] = query.value("channel_id").toString();
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
 
 
 /**

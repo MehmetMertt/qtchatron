@@ -17,7 +17,7 @@ public:
     bool validateInput(const QString& username, const QString& password, QSharedPointer<DatabaseResponse>& dbr);
     QSharedPointer<DatabaseResponse> LoginUser(const QString& username, const QString& password);
     QSharedPointer<DatabaseResponse> insertTokenByID(const QString& id);
-
+    QSharedPointer<DatabaseResponse> getChannelsFromUser(const QString& userID);
     QSharedPointer<DatabaseResponse> logoutUserByID(const QString& id);
     QSharedPointer<DatabaseResponse> getAllDirectMessagesByUserID(const QString& id);
     QSharedPointer<DatabaseResponse> getIDByToken(const QString& token);

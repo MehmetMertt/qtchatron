@@ -25,15 +25,25 @@ int main(int argc, char *argv[])
     //dbr = dbHandler.getAllDirectMessagesByUserID("2");
 
    // qDebug() << dbr->message();
+    qDebug() << "2";
 
-    dbr = dbHandler->sendMessageToUserID("2","1","siehst du das?");
+    dbr = dbHandler->getChannelsFromUser("2");
+
+
     qDebug() << dbr->message();
 
-    dbr = dbHandler->sendMessageToUserID("1","2","ja");
+    qDebug() << "1";
+
+    dbr = dbHandler->getChannelsFromUser("1");
+
+
     qDebug() << dbr->message();
 
+    qDebug() << "3";
 
-    dbr = dbHandler->getDirectMessagesBetweenUserByID("2","1");
+    dbr = dbHandler->getChannelsFromUser("3");
+
+
     qDebug() << dbr->message();
 
     /*
