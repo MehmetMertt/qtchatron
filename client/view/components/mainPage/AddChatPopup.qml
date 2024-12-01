@@ -7,7 +7,6 @@ import Client 1.0
 
 Rectangle {
     id: chatPopupContent
-
     color: "transparent"
 
     ColumnLayout {

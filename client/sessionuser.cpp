@@ -1,13 +1,28 @@
 #include "sessionuser.h"
 
+#include "channelmodel.h"
+
 SessionUser::SessionUser(QObject *parent)
     : QObject{parent},
-    _user(new User("MyUser"))
+    _user(new User("Flo"))
 {
     _dmList.append(new User("Mehmet"));
     _dmList.append(new User("Michi"));
     _dmList.append(new User("Martin"));
     _dmList.append(new User("User1"));
+
+    _channelList.append(new ChannelModel("MyChannel"));
+    _channelList.append(new ChannelModel("Yooo"));
+    _channelList.append(new ChannelModel("Group21"));
+    _channelList.append(new ChannelModel("FH"));
+    _channelList.append(new ChannelModel("This is a sick Channel"));
+    _channelList.append(new ChannelModel("One More"));
+    _channelList.append(new ChannelModel("MyChannel"));
+    _channelList.append(new ChannelModel("Yooo"));
+    _channelList.append(new ChannelModel("Group21"));
+    _channelList.append(new ChannelModel("FH"));
+    _channelList.append(new ChannelModel("This is a sick Channel"));
+    _channelList.append(new ChannelModel("One More"));
 }
 
 
@@ -37,4 +52,17 @@ void SessionUser::setDmList(const QList<QObject *> &newDmList)
 User *SessionUser::user() const
 {
     return _user;
+}
+
+QList<QObject *> SessionUser::channelList() const
+{
+    return _channelList;
+}
+
+void SessionUser::setChannelList(const QList<QObject *> &newChannelList)
+{
+    if (_channelList == newChannelList)
+        return;
+    _channelList = newChannelList;
+    emit channelListChanged();
 }

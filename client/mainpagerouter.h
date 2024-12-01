@@ -10,7 +10,7 @@ class MainPageRouter : public QObject
     Q_PROPERTY(QString topbarTitle READ topbarTitle WRITE setTopbarTitle NOTIFY topbarTitleChanged FINAL)
     Q_PROPERTY(QString topbarType READ topbarType NOTIFY topbarTypeChanged FINAL)
     Q_PROPERTY(bool showChannelInfo READ showChannelInfo WRITE setShowChannelInfo NOTIFY showChannelInfoChanged FINAL)
-
+    Q_PROPERTY(int selectedPageID READ selectedPageID WRITE setSelectedPageID NOTIFY selectedPageIDChanged FINAL)
 public:
     explicit MainPageRouter(QObject *parent = nullptr);
 
@@ -25,7 +25,6 @@ public:
 
     Q_INVOKABLE void setCurrentItem(MainArea newCurrentItem, QString newTitle = nullptr);
     Q_INVOKABLE void setTopbarTitle(QString newTitle);
-    Q_INVOKABLE void back();
     Q_INVOKABLE void triggerBack();
     Q_INVOKABLE void closeNewChatPopup();
     Q_INVOKABLE void setShowChannelInfo(bool newShowChannelInfo);
@@ -36,12 +35,16 @@ public:
     bool showChannelInfo() const;
 
 
+    int selectedPageID() const;
+    void setSelectedPageID(int newSelectedPageID);
+
 private:
     MainArea _currentItem;
     QString _topbarTitle;
     QString _topbarType;
-    QStack<MainArea> _navigationStack;
     bool _showChannelInfo;
+    int _selectedPageID;
+
 
 signals:
     void currentItemChanged();
@@ -50,4 +53,5 @@ signals:
     void backButtonPressed();
     void closePopup();
     void showChannelInfoChanged();
+    void selectedPageIDChanged();
 };

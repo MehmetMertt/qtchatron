@@ -22,6 +22,11 @@ Page {
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+
+        onAddChannel: {
+            popupLoader.setSource("../components/mainPage/AddChannelPopup.qml")
+            addChatPopup.open()
+        }
     }
 
     Topbar {
@@ -31,6 +36,7 @@ Page {
         anchors.right: parent.right
 
         onNewChatClicked: {
+            popupLoader.setSource("../components/mainPage/AddChatPopup.qml")
             addChatPopup.open()
         }
     }
@@ -87,6 +93,11 @@ Page {
 
         initialItem: dmOverviewPage
 
+    }
+
+    Component {
+        id: addChannel
+        AddChannelPopup{}
     }
 
     Popup {

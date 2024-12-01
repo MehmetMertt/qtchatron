@@ -12,12 +12,9 @@ MainPageRouter::MainArea MainPageRouter::currentItem() const {
 }
 
 void MainPageRouter::setCurrentItem(MainPageRouter::MainArea newCurrentItem, QString newTitle) {
-    qDebug() << newTitle;
     if (_currentItem != newCurrentItem || newTitle != _topbarTitle) {
-        qDebug() << "new item";
         _currentItem = newCurrentItem;
 
-         _navigationStack.push(newCurrentItem);
         // Update the title and type based on the new page
         switch (_currentItem) {
         case DM_OVERVIEW:
@@ -37,17 +34,6 @@ void MainPageRouter::setCurrentItem(MainPageRouter::MainArea newCurrentItem, QSt
         emit currentItemChanged();
         emit topbarTitleChanged();
         emit topbarTypeChanged();
-    }
-}
-
-void MainPageRouter::back() {
-    if (!_navigationStack.isEmpty()) {
-        // Pop the last page from the stack
-        _navigationStack.pop();
-        if (!_navigationStack.isEmpty()) {
-            // Set the new current item based on the last item in the stack
-            setCurrentItem(_navigationStack.top());
-        }
     }
 }
 
@@ -84,6 +70,19 @@ QString MainPageRouter::topbarType() const {
 bool MainPageRouter::showChannelInfo() const
 {
     return _showChannelInfo;
+}
+
+int MainPageRouter::selectedPageID() const
+{
+    return _selectedPageID;
+}
+
+void MainPageRouter::setSelectedPageID(int newSelectedPageID)
+{
+    if (_selectedPageID == newSelectedPageID)
+        return;
+    _selectedPageID = newSelectedPageID;
+    emit selectedPageIDChanged();
 }
 
 void MainPageRouter::setShowChannelInfo(bool newShowChannelInfo)

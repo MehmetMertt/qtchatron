@@ -14,9 +14,12 @@ Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
     scale: 1
 
+    required property var index
+    property ChannelModel channel: SessionUser.channelList[index]
+
     Text {
         anchors.centerIn: parent
-        text: "C" // Display the channel name
+        text: channelIcon.channel.channelName[0] + channelIcon.channel.channelName[1]
         color: "white"
         font.pixelSize: 20
         anchors.horizontalCenterOffset: -2
@@ -35,9 +38,10 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            MainPageRouter.setCurrentItem(MainPageRouter.CHANNEL, model.name)
-            console.log("Channel clicked: " + model.name)
+            MainPageRouter.setCurrentItem(MainPageRouter.CHANNEL, channelIcon.channel.channelName)
+            console.log("Channel clicked: " + channelIcon.channel.channelName)
         }
+        cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
         onEntered: {
             hoverIndicator.visible = true

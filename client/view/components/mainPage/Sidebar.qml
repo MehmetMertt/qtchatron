@@ -13,6 +13,10 @@ Rectangle {
     width: 80
     color: Material.background
 
+    property list<ChannelModel> channels
+
+    signal addChannel();
+
     // Friends Icon
     Rectangle {
         id: friendsIcon
@@ -45,24 +49,75 @@ Rectangle {
         anchors.top: sidebarFriendsSeparator.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: sidebarUserSeparator.top
+        anchors.bottom: channelAddIcon.top
+        anchors.bottomMargin: 10
         clip: true
 
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
         ListView {
-            id: channelList
+            id: channelListView
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 10
-            model: ListModel {
-                ListElement { name: "Channel 1" }
-                ListElement { name: "Channel 2" }
-                ListElement { name: "Channel 3" }
-                ListElement { name: "Channel 4" }
-            }
+            model: SessionUser.channelList
             delegate: ChannelIcon {}
         }
+    }
+
+    ToolButton {
+        id: channelAddIcon
+        width: 45
+        height: 45
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        anchors.bottom: sidebarUserSeparator.top
+
+        icon.source: "qrc:/icons/add_plus_icon.png"  // Replace with an actual path to your icon
+        icon.color: Material.primary
+        icon.height: 35
+        icon.width: 35
+
+        background: Rectangle {
+            anchors.fill: parent
+            radius: width/5
+            color: "black"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                sidebar.addChannel()
+                console.log("Channel clicked: add")
+            }
+            hoverEnabled: true
+            onEntered: {
+                scaleAnimation.start()
+            }
+            onExited: {
+                scaleDownAnimation.start()
+            }
+
+        }
+    }
+
+    PropertyAnimation {
+        id: scaleAnimation
+        target: channelAddIcon
+        property: "scale"
+        to: 1.05  // Scale up by 10%
+        duration: 100
+        easing.type: Easing.InOutQuad
+    }
+
+    PropertyAnimation {
+        id: scaleDownAnimation
+        target: channelAddIcon
+        property: "scale"
+        to: 1  // Back to original scale
+        duration: 100
+        easing.type: Easing.InOutQuad
     }
 
     ToolSeparator {
@@ -84,7 +139,7 @@ Rectangle {
         anchors.bottomMargin: 10
 
         Text {
-            text: "A"
+            text: SessionUser.user.getInitials()
             color: "white"
             font.pixelSize: 24
             horizontalAlignment: Text.AlignHCenter
@@ -112,7 +167,7 @@ Rectangle {
                 anchors.fill: parent
                 spacing: 10
                 Text {
-                    text: "Username"
+                    text: SessionUser.user.username
                     font.pixelSize: 16
                     color: Material.foreground
                     Layout.alignment: Qt.AlignLeft
