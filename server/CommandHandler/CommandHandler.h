@@ -4,6 +4,7 @@
 #include <QObject>
 #include <string>
 #include "CommandHandler/command.h"
+#include "../Database/databasehandler.h"
 
 class CommandHandler : public QObject
 {
@@ -18,6 +19,11 @@ public:
      * @return The response string.
      */
     std::string routeCommand(const Command& command);
+
+    QString getCommandResponseName(const Command& command);
+
+private:
+    databaseHandler *_dbHandler;
 
 signals:
     /**

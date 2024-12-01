@@ -3,10 +3,12 @@
 #include "qsslconfiguration.h"
 #include <QDataStream>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QFile>
 #include <QDebug>
 
-#include "unistd.h"
+Communicator* Communicator::instance = nullptr;
+std::mutex Communicator::mtx;
 
 Communicator::Communicator(QObject *parent)
     : QObject(parent)
@@ -123,6 +125,27 @@ void Communicator::handleProtocolMessage(const Protocol& p)
         break;
     case MessageType::COMMAND_TRANSFER:
         // implement command_transfer
+
+        if(p.getName() == "login_response") {
+
+            QString jsonQString = QString::fromStdString(p.getPayload());
+
+            // Konvertiere den QString in ein QJsonDocument
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+            // Überprüfen, ob das Dokument gültiges JSON enthält
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+                QJsonObject jsonObject = jsonDoc.object();
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                emit loginResponseReceived(success, message);
+            }
+
+        }
+
         emit logMessage("Command response received: " + QString::fromStdString(p.getPayload()));
         break;
     case MessageType::FILE_TRANSFER:
@@ -143,7 +166,7 @@ void Communicator::error(QAbstractSocket::SocketError socketError)
 
 bool Communicator::setSslCaCertificate(const QString &path, QSsl::EncodingFormat format)
 {
-    QFile certificateFile("../certs/" + path);
+    QFile certificateFile(":/certs/" + path);
 
     if (!certificateFile.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to open certificate file:" << path;

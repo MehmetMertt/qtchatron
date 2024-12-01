@@ -44,7 +44,7 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
         }
 
         // Create a redsponse Protocol message
-        Protocol responseProtocol(MessageType::COMMAND_TRANSFER, "Server", responsePayload);
+        Protocol responseProtocol(MessageType::COMMAND_TRANSFER, commandHandler.getCommandResponseName(cmd).toStdString(), responsePayload);
 
         // Send the response back to the client
         sender->sendData(responseProtocol);

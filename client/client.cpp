@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "Communicator/Communicator.h"
+
 Client::Client(QObject *parent)
     : QObject{parent}
 {}
@@ -34,6 +36,7 @@ QPair<QString, quint16> Client::loadConfiguration() {
 
 void Client::start() {
     auto [address, port] = loadConfiguration();
-    connect(&_communicator, &Communicator::socketEncryptionSuccess, this, [this]()->void{emit encryptionSuccess();});
-    _communicator.connectToServer(address, port);
+    auto communicator = Communicator::getInstance();
+    connect(communicator, &Communicator::socketEncryptionSuccess, this, [this]()->void{emit encryptionSuccess();});
+    communicator->connectToServer(address, port);
 }

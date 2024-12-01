@@ -25,7 +25,7 @@ Page {
         id: formLayout
         anchors.centerIn: parent
         spacing: 20
-        width: parent.width * 0.25
+        width: parent.width * 0.3
 
 
         // Title
@@ -90,6 +90,8 @@ Page {
             color: "red"
             font.pixelSize: 14
             Layout.alignment: Qt.AlignHCenter
+            Layout.maximumWidth: parent.width
+            wrapMode: Text.WordWrap
         }
 
         Connections {
