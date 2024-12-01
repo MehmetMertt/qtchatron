@@ -3,7 +3,8 @@
 MainPageRouter::MainPageRouter(QObject *parent) : QObject(parent),
     _currentItem(DM_OVERVIEW),
     _topbarTitle("Direct Messages"),
-    _topbarType("dm")
+    _topbarType("dm"),
+    _showChannelInfo(true)
 {}
 
 MainPageRouter::MainArea MainPageRouter::currentItem() const {
@@ -78,5 +79,18 @@ QString MainPageRouter::topbarTitle() const {
 
 QString MainPageRouter::topbarType() const {
     return _topbarType;
+}
+
+bool MainPageRouter::showChannelInfo() const
+{
+    return _showChannelInfo;
+}
+
+void MainPageRouter::setShowChannelInfo(bool newShowChannelInfo)
+{
+    if (_showChannelInfo == newShowChannelInfo)
+        return;
+    _showChannelInfo = newShowChannelInfo;
+    emit showChannelInfoChanged();
 }
 

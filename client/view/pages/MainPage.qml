@@ -30,15 +30,6 @@ Page {
         anchors.top: parent.top
         anchors.right: parent.right
 
-        // Bind topbar properties to MainPageRouter
-        pageTitle: MainPageRouter.topbarTitle
-        pageType: MainPageRouter.topbarType
-
-        onToggleChannelInfobar: {
-            console.log("toggle")
-
-        }
-
         onNewChatClicked: {
             addChatPopup.open()
         }

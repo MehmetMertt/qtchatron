@@ -34,7 +34,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
-        visible: channelPage.isChannelInfobarVisible
+        visible: MainPageRouter.showChannelInfo
 
     }
 }

@@ -12,10 +12,6 @@ Rectangle {
     color: "#252328"
     clip: true
 
-    property var pageTitle: "Direct Messages"
-    property var pageType: "dm"
-
-    signal toggleChannelInfobar()
     signal newChatClicked()
 
     Rectangle {
@@ -79,7 +75,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             flat: true
 
-            visible: (topbar.pageType === "dm")
+            visible: (MainPageRouter.currentItem == MainPageRouter.DM_OVERVIEW)
 
             contentItem: Text {
                 text: addDirectMessage.text
@@ -105,7 +101,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             flat: true
 
-            visible: (topbar.pageType === "channel")
+            visible: (MainPageRouter.currentItem == MainPageRouter.CHANNEL)
 
             contentItem: Text {
                 text: showInfo.text
@@ -116,7 +112,7 @@ Rectangle {
             }
 
             onClicked: {
-                topbar.toggleChannelInfobar()
+                MainPageRouter.showChannelInfo = !MainPageRouter.showChannelInfo
             }
         }
 
