@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
+import QtQuick.Controls.Material
+
 import Client 1.0
 
 
@@ -17,6 +18,7 @@ Window {
     Material.theme: Material.Dark // or Material.Dark
     Material.accent: Material.Blue
     Material.primary: Material.Blue
+
 
     ClientController {
         id: clientController
@@ -68,6 +70,7 @@ Window {
         id: mainStack
         anchors.fill: parent
         visible: true
+
 
         initialItem: loadingPage
     }

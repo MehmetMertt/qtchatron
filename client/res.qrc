@@ -2,5 +2,12 @@
     <qresource prefix="/">
         <file>certs/server.crt</file>
         <file>config/config.json</file>
+        <file>icons/add_plus_icon.png</file>
+        <file>icons/emoji_icon.png</file>
+        <file>icons/gif_icon.png</file>
+        <file>icons/send_icon.png</file>
+        <file>icons/gif2_icon.png</file>
+        <file>icons/back_icon.png</file>
+        <file>icons/delete_icon.png</file>
     </qresource>
 </RCC>

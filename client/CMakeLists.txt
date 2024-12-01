@@ -22,6 +22,13 @@ qt_add_qml_module(appClient
     SOURCES clientcontroller.h clientcontroller.cpp
     SOURCES client.h client.cpp
     SOURCES Communicator/Communicator.h Communicator/Communicator.cpp
+    SOURCES chatmessageitem.h chatmessageitem.cpp
+    SOURCES chatmessagelist.h chatmessagelist.cpp
+    SOURCES messagemodel.h messagemodel.cpp
+    SOURCES mainpagerouter.h mainpagerouter.cpp
+    SOURCES sessionuser.h sessionuser.cpp
+    SOURCES user.h user.cpp
+    SOURCES channelmodel.h channelmodel.cpp
     SOURCES router.h router.cpp
     SOURCES authmodel.h authmodel.cpp
     SOURCES authcontroller.h authcontroller.cpp
