@@ -4,3 +4,5 @@ client/client/build
 build/
 /server/bin
 /Client/.qmlls.ini
+*.ini
+

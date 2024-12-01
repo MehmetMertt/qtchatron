@@ -17,5 +17,8 @@
         <file>view/components/channels/ChannelPage.qml</file>
         <file>view/components/channels/ChannelInfobar.qml</file>
         <file>view/components/user/UserCard.qml</file>
+        <file>view/components/mainPage/AddChatPopup.qml</file>
+        <file>view/components/mainPage/AddChannelPopup.qml</file>
+        <file>view/pages/SignupPage.qml</file>
     </qresource>
 </RCC>

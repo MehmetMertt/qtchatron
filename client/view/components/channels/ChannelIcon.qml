@@ -3,6 +3,8 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 
+import Client 1.0
+
 Rectangle {
     id: channelIcon
     width: 50
@@ -12,9 +14,12 @@ Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
     scale: 1
 
+    required property var index
+    property ChannelModel channel: SessionUser.channelList[index]
+
     Text {
         anchors.centerIn: parent
-        text: "C" // Display the channel name
+        text: channelIcon.channel.channelName[0] + channelIcon.channel.channelName[1]
         color: "white"
         font.pixelSize: 20
         anchors.horizontalCenterOffset: -2
@@ -32,7 +37,11 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: console.log("Channel clicked: " + model.name)
+        onClicked: {
+            MainPageRouter.setCurrentItem(MainPageRouter.CHANNEL, channelIcon.channel.channelName)
+            console.log("Channel clicked: " + channelIcon.channel.channelName)
+        }
+        cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
         onEntered: {
             hoverIndicator.visible = true

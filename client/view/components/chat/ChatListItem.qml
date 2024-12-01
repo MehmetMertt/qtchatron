@@ -4,7 +4,7 @@ import QtQuick.Controls.Material 2.15
 
 Item {
     id: itemRoot
-    width: parent.width  // Match ListView width
+    width: parent ? parent.width : 0  // Match ListView width
     height: messageItem.height + 20  // Height based on content
 
     required property var model  // Model passed from ListView
@@ -24,6 +24,7 @@ Item {
         anchors.left: itemRoot.isCurrentUser ? undefined : parent.left
         anchors.right: itemRoot.isCurrentUser ? parent.right : undefined
         layoutDirection: itemRoot.isCurrentUser ? Qt.RightToLeft : Qt.LeftToRight
+        width: Math.min(messageText.implicitWidth + 24, (itemRoot ? itemRoot.width * 0.45 : 100))
 
         // User icon
         Rectangle {
@@ -38,7 +39,7 @@ Item {
         Column {
             id: messageContainer
             spacing: 4
-            width: Math.min(messageText.implicitWidth + 24, (parent.width * 0.9))
+            width: parent.width
             height: messageText.implicitHeight + 32
             // Message Bubble with Text and Time
             Rectangle {

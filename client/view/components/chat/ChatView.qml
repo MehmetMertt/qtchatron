@@ -7,36 +7,49 @@ import Client 1.0
 
 
 //import "../components/messageItem.qml"
-pragma ComponentBehavior: Bound
-
-
 
 Rectangle {
     id: root
     color: "#252328"
 
-    property list<ChatMessageItem> chatList: ChatMessageList.chatMessageList
+    property list<ChatMessageItem> chatList: MessageModel.messageList
+    property var messageModel: MessageModel
 
-
+    Connections{
+        target: root.messageModel
+        function onSendMessageSuccess() {
+            messageField.text = ""
+            chatListView.positionViewAtEnd();
+        }
+    }
 
     Rectangle{
         id: clientChat
         anchors.top: parent.top
         width: root.width
-        anchors.bottom: root.bottom
+        anchors.bottom: bottomBar.top
 
         color: "transparent"
 
         ScrollView {
             anchors.fill: parent
-            anchors.margins: 15
             clip: true
+
 
             ListView{
                 id: chatListView
                 anchors.fill: parent
+                anchors.margins: 20
                 model: root.chatList
                 spacing: 8
+
+                onMovementEnded: {
+                    chatListView.returnToBounds();  // Stops the list immediately
+                }
+/*
+                highlightMoveDuration: 1000
+                highlightMoveVelocity: -1
+                */
 
                 highlightFollowsCurrentItem: true
 
@@ -141,7 +154,12 @@ Rectangle {
                                 inputFieldContainer.border.color = "#2A2A2A"  // Default border color when not focused
                             }
                         }
-
+                        Keys.onPressed: (event)=> {
+                            if ((event.key+1 == Qt.Key_Enter && (event.modifiers == 0 || event.modifiers == Qt.ControlModifier))){
+                                sendButton.sendMessage()
+                                event.accepted = true;
+                            }
+                        }
                         // Dynamically update height based on the number of lines
                         onTextChanged: {
                             // Count the number of lines (using "\n" as line break delimiter)
@@ -151,10 +169,20 @@ Rectangle {
                             //inputFieldContainer.height = Math.min(((lines-1) * 20 + 50), 110);
                             bottomBar.height = Math.min((lines-1)*20 + 80, 180);
                             //console.log(inputFieldContainer.height)
+
+                            root.messageModel.inputMessage = messageField.text
                         }
 
 
+
                     }
+
+                    /*
+                    Shortcut{
+                        sequence: messageField.visible ? "Ctrl+Return" : ""
+                        onActivated: sendButton.sendMessage()
+                    }
+                    */
                 }
 
             }
@@ -189,11 +217,15 @@ Rectangle {
 
             // Send Button
             Rectangle {
+                id: sendButton
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: 45
                 radius: 25
-                color: "#1E88E5"
+                color: sendButtonArea.containsMouse && messageValid() ? "#1E88E5" : "transparent"
+                border.color: messageValid() ? "#1E88E5" : "grey"
+                border.width: 1
                 Layout.alignment: Qt.AlignVCenter
+
 
                 Image {
                     anchors.centerIn: parent
@@ -203,12 +235,32 @@ Rectangle {
                 }
 
                 MouseArea {
+                    id: sendButtonArea
                     anchors.fill: parent
+                    cursorShape: parent.messageValid() ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    hoverEnabled: true
                     onClicked: {
-                        // Handle send action here
+                        sendButton.sendMessage()
                     }
                 }
+
+                function sendMessage(){
+                    if(!messageValid()) {
+                        return;  // Don't send if the message is empty
+                    }
+                    root.messageModel.inputMessage = trimmedMessage()
+                    root.messageModel.sendMessage()
+                    messageField.text = ""
+                }
+
+                function messageValid(){
+                    return trimmedMessage() !== ""
+                }
+                function trimmedMessage() {
+                    return messageField.text.trim()
+                }
             }
+
         }
     }
 

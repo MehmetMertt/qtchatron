@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
+import Client 1.0
 
 Rectangle {
     id: topbar
@@ -11,10 +12,7 @@ Rectangle {
     color: "#252328"
     clip: true
 
-    property var pageTitle: "Direct Messages"
-    property var pageType: "dm"
-
-    signal toggleChannelInfobar()
+    signal newChatClicked()
 
     Rectangle {
         color: "transparent"
@@ -32,9 +30,34 @@ Rectangle {
         anchors.leftMargin: 15
         anchors.rightMargin: 15
 
+
+        ToolButton {
+            id: backButton
+            icon.source: "qrc:/icons/back_icon.png"  // Replace with an actual path to your icon
+            icon.color: "#686868"
+            icon.height: 30
+            icon.width: 40
+
+            visible: MainPageRouter.currentItem !== MainPageRouter.DM_OVERVIEW  // Conditional visibility
+
+
+            background: Rectangle {
+                color: "transparent"  // Make background transparent
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    MainPageRouter.triggerBack();  // Call the back method
+                }
+            }
+        }
+
+
         Text {
             id: pageTitle
-            text: topbar.pageTitle
+            text: MainPageRouter.topbarTitle
             font.pixelSize: 24
             color: Material.foreground
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -52,7 +75,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             flat: true
 
-            visible: (topbar.pageType === "dm")
+            visible: (MainPageRouter.currentItem == MainPageRouter.DM_OVERVIEW)
 
             contentItem: Text {
                 text: addDirectMessage.text
@@ -60,6 +83,11 @@ Rectangle {
                 color: Material.primary
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                console.log("new chat clicked")
+                topbar.newChatClicked()
             }
         }
 
@@ -73,7 +101,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             flat: true
 
-            visible: (topbar.pageType === "channel")
+            visible: (MainPageRouter.currentItem == MainPageRouter.CHANNEL)
 
             contentItem: Text {
                 text: showInfo.text
@@ -84,7 +112,7 @@ Rectangle {
             }
 
             onClicked: {
-                topbar.toggleChannelInfobar()
+                MainPageRouter.showChannelInfo = !MainPageRouter.showChannelInfo
             }
         }
 

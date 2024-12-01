@@ -3,8 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
+import Client 1.0
+
+pragma ComponentBehavior: Bound
+
 Item {
     id: dmOverviewPage
+
+    property list<User> userDmList: SessionUser.dmList
 
     Rectangle {
         anchors.fill: parent
@@ -25,7 +31,6 @@ Item {
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-
             ListView {
                 id: dmList
 
@@ -33,15 +38,11 @@ Item {
 
 
                 spacing: 10
-                model: ListModel {
-                    ListElement { name: "Flo" }
-                    ListElement { name: "Mehmet" }
-                    ListElement { name: "Michi" }
-                    ListElement { name: "Martin" }
-                    // Add more channels as needed
-                }
+                model: dmOverviewPage.userDmList
 
                 delegate: Item {
+                    id: listItem
+                    required property var index
                     width: parent.width  // Ensure it matches ListView width
                     height: 60  // Adjust according to your item size
 
@@ -50,6 +51,7 @@ Item {
                       spacing: 5
 
                       DirectMessageListItem {
+                          user: dmList.model[listItem.index]
                           Layout.preferredWidth: parent.width - parent.width/10  // Expand to use full width
                           Layout.preferredHeight: 50  // Adjust according to content
                       }
@@ -58,7 +60,7 @@ Item {
                           color: Material.background  // Separator color
                           Layout.preferredHeight: 1
                           Layout.preferredWidth: parent.width - parent.width/10  // Use the full width
-                          visible: (index !== dmList.count - 1)  // Hide separator for the last item
+                          visible: (listItem.index !== dmList.count - 1)  // Hide separator for the last item
                       }
                     }
                     }
