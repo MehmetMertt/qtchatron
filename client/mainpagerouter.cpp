@@ -29,6 +29,10 @@ void MainPageRouter::setCurrentItem(MainPageRouter::MainArea newCurrentItem, QSt
             _topbarTitle = newTitle != nullptr ? newTitle : "Chat";
             _topbarType = "chat";
             break;
+        case SETTINGS:
+            _topbarTitle = "Settings";
+            _topbarType = "settings";
+            break;
         }
 
         emit currentItemChanged();

@@ -6,7 +6,6 @@ import QtQuick.Controls.Basic
 Rectangle {
     id: channelPopupContent
     color: "transparent"
-    anchors.fill: parent
 
     ColumnLayout {
         spacing: 5
@@ -22,10 +21,11 @@ Rectangle {
                 color: "transparent"
             }
             TabButton {
+                id: joinTabButton
                 text: "Join Channel"
                 contentItem: Text {
                     text: qsTr("Join Channel")
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     color: "#f7f7f7"
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -38,13 +38,21 @@ Rectangle {
                     radius: 5
                 }
 
+                MouseArea {
+                    id: joinTabArea
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: joinTabButton.click()
+                }
+
             }
             TabButton {
+                id: createTabButton
                 text: "Create Channel"
 
                 contentItem: Text {
                     text: qsTr("Create Channel")
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     color: "#f7f7f7"
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -55,6 +63,13 @@ Rectangle {
                     border.color: tabBar.currentIndex == 1 ? "#00A6E0" : "transparent"
                     border.width: 1
                     radius: 5
+                }
+
+                MouseArea {
+                    id: createTabArea
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: createTabButton.click()
                 }
             }
 
@@ -77,7 +92,7 @@ Rectangle {
                 placeholderText: "Enter channel name"
                 topPadding: 10
                 bottomPadding: 10
-                font.pixelSize: 14
+                font.pixelSize: 16
                 Layout.fillWidth: true
                 background: Rectangle {
                     color: "transparent"
@@ -108,7 +123,7 @@ Rectangle {
                     placeholderText: "Enter secret key (optional)"
                     topPadding: 10
                     bottomPadding: 10
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     Layout.fillWidth: true
                     background: Rectangle {
                         color: "transparent"
@@ -166,7 +181,7 @@ Rectangle {
 
             contentItem: Text {
                 text: tabBar.currentIndex === 0 ? "Join" : "Create"
-                font.pixelSize: 22
+                font.pixelSize: 18
                 color: actionButton.hovered ? "white" : "#00A6E0"
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

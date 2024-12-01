@@ -20,5 +20,6 @@
         <file>view/components/mainPage/AddChatPopup.qml</file>
         <file>view/components/mainPage/AddChannelPopup.qml</file>
         <file>view/pages/SignupPage.qml</file>
+        <file>view/components/mainPage/Settings.qml</file>
     </qresource>
 </RCC>

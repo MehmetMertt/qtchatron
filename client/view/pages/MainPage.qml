@@ -69,8 +69,10 @@ Page {
             pageToShow = dmOverviewPage;
         } else if (c_page_index === 1) {
             pageToShow = channelPage;
-        } else {
+        } else if(c_page_index === 2){
             pageToShow = chatViewPage;
+        } else {
+            pageToShow = settingsPage;
         }
 
         // Check if the page is already on the stack
@@ -105,10 +107,10 @@ Page {
     Popup {
         id: addChatPopup
         modal: true
-        focus: true
         anchors.centerIn: parent
         width: parent.width/2
         height: parent.height/2
+        z: 2
 
         // Using Loader to load different content dynamically
         Loader {
@@ -116,42 +118,30 @@ Page {
             anchors.fill: parent
 
             // Initially load AddNewChat
-            sourceComponent: addNewChat
+            source: "../components/mainPage/AddChatPopup.qml"
 
         }
 
-        // Close the popup on clicking outside of it
-
     }
-
-
-    Component {
-        id: addNewChat
-        AddChatPopup {
-
-        }
-    }
-
-
 
     Component{
         id: channelPage;
-        ChannelPage{
-
-        }
+        ChannelPage{}
     }
 
     Component {
         id: dmOverviewPage
-        DirectMessageOverviewPage {
-
-        }
+        DirectMessageOverviewPage {}
     }
+
     Component {
         id:chatViewPage;
-        ChatView {
+        ChatView {}
+    }
 
-        }
+    Component {
+        id:settingsPage;
+        Settings {}
     }
 
 

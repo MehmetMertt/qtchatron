@@ -17,7 +17,8 @@ public:
     enum MainArea {
         DM_OVERVIEW,
         CHANNEL,
-        CHAT
+        CHAT,
+        SETTINGS
     };
     Q_ENUM(MainArea);
 

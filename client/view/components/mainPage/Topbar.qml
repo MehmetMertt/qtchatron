@@ -85,9 +85,16 @@ Rectangle {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            onClicked: {
-                console.log("new chat clicked")
-                topbar.newChatClicked()
+            MouseArea {
+                id: addDirectMessageArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: {
+                    console.log("new chat clicked")
+                    topbar.newChatClicked()
+                }
             }
         }
 
@@ -111,8 +118,15 @@ Rectangle {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            onClicked: {
-                MainPageRouter.showChannelInfo = !MainPageRouter.showChannelInfo
+            MouseArea {
+                id: showInfoArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: {
+                    MainPageRouter.showChannelInfo = !MainPageRouter.showChannelInfo
+                }
             }
         }
 
