@@ -41,6 +41,7 @@ public:
 
     /* Thread-Section */
     QSharedPointer<DatabaseResponse> createThread(const QString& channelID,const QString& title,const QString& userID);
+    QSharedPointer<DatabaseResponse> getThreadsFromChannel(const QString& channelID);
 
 
 signals:

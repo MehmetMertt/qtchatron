@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
   //  dbr = dbHandler->LoginUser("Mehmwewett","hwhwhdwhdwdw");
 
-
+/*
     dbr = dbHandler->createThread("2","asddwdf","3");
 
     qDebug() << dbr->message();
@@ -30,10 +30,31 @@ int main(int argc, char *argv[])
     dbr = dbHandler->createThread("1","","2");
 
     qDebug() << dbr->message();
+*/
+
+   // qDebug() << "1";
 
 
-    dbr = dbHandler->createThread("2","asddwdf","3");
+  //  dbr = dbHandler->createThread("2","asddwdf","3");
 
+    //qDebug() << dbr->message();
+
+    qDebug() << "2";
+
+
+    dbr = dbHandler->getThreadsFromChannel("1");
+    qDebug() << dbr->message();
+
+
+    qDebug() << "3";
+
+    dbr = dbHandler->getThreadsFromChannel("2");
+    qDebug() << dbr->message();
+
+    qDebug() << "2";
+
+
+    dbr = dbHandler->getThreadsFromChannel("1337");
     qDebug() << dbr->message();
 
 

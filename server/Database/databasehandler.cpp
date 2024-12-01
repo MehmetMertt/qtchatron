@@ -28,21 +28,75 @@ QString generateRandomString(int length = 15) {
 
 
 
+
+
 QSqlDatabase databaseHandler::getDatabase() {
     return QSqlDatabase::database();
 }
 
 
-/**
- * \brief Creates a Channel
- *
- * Takes the name, type and access_type as parameter and insert the channel into the database
- *
- * \param name name of the channel
- * \param type type of the channel (either voice or text)
- * \param isPublic either true to have a public channel or false to have a private channel
 
- * \return returns QSharedPointer<DatabaseResponse> with success and if private -> invite link
+QSharedPointer<DatabaseResponse> databaseHandler::getThreadsFromChannel(const QString& channelID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT id, channel_id, title, created_by, created_at
+        FROM Threads where channel_id = :channel_id;
+    )");
+    query.bindValue(":channel_id", channelID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        messageObject["id"] = query.value("id").toString();
+        messageObject["channel_id"] = query.value("channel_id").toString();
+        messageObject["title"] = query.value("title").toString();
+        messageObject["created_by"] = query.value("created_by").toString();
+        messageObject["created_at"] = query.value("created_at").toString();
+
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
+/**
+ * \brief Creates a Thread
+ *
+ * Takes the channelID, title and userID as parameter and insert the thread into the database
+ *
+ * \param channelID id of the channel
+ * \param title title of the thread
+ * \param userID id if the user
+
+ * \return returns QSharedPointer<DatabaseResponse>
  */
 QSharedPointer<DatabaseResponse> databaseHandler::createThread(const QString& channelID,const QString& title,const QString& userID) {
     QSqlDatabase db = getDatabase();
