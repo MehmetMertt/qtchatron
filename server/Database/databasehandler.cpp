@@ -8,7 +8,14 @@
 
 
 
-
+/**
+ * \brief Function to generate a Random String A-Za-z0-9
+ *
+ * This functions returns a random string consiting of Upper and lower case letters and numbers
+ *
+ * \param length length of the random string (default: length=15)
+ * \return returns random string
+ */
 QString generateRandomString(int length = 15) {
     const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     const int charactersLength = possibleCharacters.length();
@@ -23,11 +30,6 @@ QString generateRandomString(int length = 15) {
 
     return randomString;
 }
-
-
-
-
-
 
 
 QSqlDatabase databaseHandler::getDatabase() {
@@ -153,7 +155,16 @@ QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToThread(const QStr
     return dbr;
 }
 
-
+/**
+ * \brief get all Threads from a Channel
+ *
+ * This function takes the channelID and returns DatabaseResponse Object with all treads
+ *
+ * \param threadID ID of the thread
+ * \param userID ID of the user
+ * \param message Message to send
+ * \return returns QSharedPointer<DatabaseResponse> Object
+ */
 QSharedPointer<DatabaseResponse> databaseHandler::getThreadsFromChannel(const QString& channelID) {
     QSqlDatabase db = getDatabase();
     QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
@@ -322,31 +333,6 @@ QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QStrin
     return dbr;
 }
 
-
-
-
-
-
-
-
-/*
-INSERT INTO Channels
-(name, "type", access_type,invite_link)
-VALUES('fortnite gamers', 'text', 'public',null);
-
-
-access_type might be public or private
-type might be text or voice
-
-INSERT INTO Channels
-(name, "type", access_type,invite_link)
-VALUES('twentyonegroup', 'text', 'private','HAjswwdkk2S');
-
-
-     *
-     * */
-
-
 /**
  * \brief Creates a Channel
  *
@@ -423,13 +409,11 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
 
 
 /**
- * \brief Gets all DIrect Messages between two UserID's
+ * \brief Gets all Channels
  *
- * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
+ * This function takes returns informationa bout all channels available
  *
- * \param id ID of the first user
- * \param id ID of the second user
- * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ * \return returns QSharedPointer<DatabaseResponse> Object with all channels
  */
 QSharedPointer<DatabaseResponse> databaseHandler::getChannels() {
     QSqlDatabase db = getDatabase();
@@ -461,15 +445,10 @@ QSharedPointer<DatabaseResponse> databaseHandler::getChannels() {
         //   messageObject["chat_id"] = query.value("id").toString();
         messageObject["id"] = query.value("id").toString();
         messageObject["name"] = query.value("name").toString();
-
         messageObject["type"] = query.value("type").toString();
-
         messageObject["access_type"] = query.value("access_type").toString();
         messageObject["invite_link"] = query.value("invite_link").toString();
         messageObject["created_at"] = query.value("created_at").toString();
-
-
-
         jsonArray.append(messageObject);
     }
 
@@ -490,32 +469,27 @@ QSharedPointer<DatabaseResponse> databaseHandler::getChannels() {
 
 bool databaseHandler::isUserInChannel(const QString& userID, const QString& channelID) {
     QSqlDatabase db = getDatabase();
-    // Check if the database is open
     if (!db.isOpen()) {
         qDebug() << "Database is not open.";
         return false;
     }
 
-    // Prepare the SQL query
     QSqlQuery query(db);
     query.prepare(R"(
         SELECT COUNT(*) FROM ChannelUser where channel_id = :channel_id and user_id = :user_id;
     )");
 
-    // Bind parameters
     query.bindValue(":user_id", userID);
     query.bindValue(":channel_id", channelID);
 
-    // Execute the query
     if (!query.exec()) {
         qDebug() << "Database query failed:" << query.lastError().text();
         return false;
     }
 
-    // Check the result
     if (query.next()) {
         int count = query.value(0).toInt();
-        return count > 0; // Return true if the count is greater than 0
+        return count > 0;
     }
 
     return false;
@@ -523,13 +497,12 @@ bool databaseHandler::isUserInChannel(const QString& userID, const QString& chan
 
 
 /**
- * \brief Gets all DIrect Messages between two UserID's
+ * \brief Gets all Channls that the user is a member of
  *
- * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
+ * This function takes the user ID and returns DatabaseResponsew with all channel ids
  *
- * \param id ID of the first user
- * \param id ID of the second user
- * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ * \param userID ID of the user
+ * \return returns QSharedPointer<DatabaseResponse> Object
  */
 QSharedPointer<DatabaseResponse> databaseHandler::getChannelsFromUser(const QString& userID) {
     QSqlDatabase db = getDatabase();
@@ -631,13 +604,13 @@ QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToChannel(const QSt
 
 
 /**
- * \brief Gets all DIrect Messages between two UserID's
+ * \brief Function to send message to another user
  *
  * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
  *
  * \param id ID of the first user
  * \param id ID of the second user
- * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ * \return returns QSharedPointer<DatabaseResponse> Object
  */
 QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToUserID(const QString& senderID,const QString& receiverID,const QString& message) {
     QSqlDatabase db = getDatabase();
@@ -682,7 +655,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToUserID(const QStr
 
 
 /**
- * \brief Gets all DIrect Messages between two UserID's
+ * \brief Gets all Direct Messages between two UserID's
  *
  * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
  *
@@ -719,7 +692,6 @@ QSharedPointer<DatabaseResponse> databaseHandler::getDirectMessagesBetweenUserBy
 
     while (query.next()) {
         QJsonObject messageObject;
-     //   messageObject["chat_id"] = query.value("id").toString();
         messageObject["sender_id"] = query.value("sender_id").toString();
         messageObject["receiver_id"] = query.value("receiver_id").toString();
         messageObject["content"] = query.value("content").toString();
@@ -796,11 +768,34 @@ QSharedPointer<DatabaseResponse> databaseHandler::AddUser(const QString& usernam
 
 
 
+/**
+ * \brief Function to check if the given passwod matches with the stored one (+ hash)
+ *
+ * Checks if the input password matches with the stored password
+ *
+ * \param inputPassword password that the user entered
+ * \param storedHash hash from the database
+ * \param storedSalt Salt from the username
+ * \return returns true if passwords matches
+ */
 bool databaseHandler::verifyPassword(const QString& inputPassword, const QString& storedHash, const QString& storedSalt) {
     QString inputHash = getSHA256(inputPassword + storedSalt);
     return inputHash == storedHash;
 }
 
+
+/**
+ * \brief Function to check if the input of username and password are valid
+ *
+ * A username is valid if it is not empty and CONSITS Upper and lower case letters, numbers and underscores and dashes
+ * A password is valid if it is longer or equal than 8
+ *
+ * \param username The Username of the user
+ * \param password The password of the user
+ * \param dbr QSharedPointer<DatabaseResponse> of a object of DatabaseResponse
+
+ * \return returns true or false ofd input is valid
+ */
 bool databaseHandler::validateInput(const QString& username, const QString& password, QSharedPointer<DatabaseResponse>& dbr) {
     if (username.isEmpty() || password.isEmpty()) {
         dbr->setMessage("Username and password cannot be empty.");
@@ -855,17 +850,14 @@ QSharedPointer<DatabaseResponse> databaseHandler::LoginUser(const QString& usern
     }
 
     if (!query.next()) {
-        // Username not found
         dbr->setMessage("Invalid Username or Password");
         return dbr;
     }
 
-    // Retrieve hash and salt
     QString storedHash = query.value("password_hash").toString();
     QString id = query.value("id").toString();
     QString storedSalt = query.value("password_salt").toString();
 
-    // Hash the input password with the stored salt
     QString inputHash = getSHA256(password + storedSalt);
 
     if (!verifyPassword(password, storedHash, storedSalt)) {
@@ -875,9 +867,6 @@ QSharedPointer<DatabaseResponse> databaseHandler::LoginUser(const QString& usern
 
 
 
-    // Login successful
-
-    //TODO: get channels & messages from user
 
     return insertTokenByID(id);
 }
@@ -927,12 +916,12 @@ QSharedPointer<DatabaseResponse> databaseHandler::getIDByToken(const QString& to
 }
 
 /**
- * \brief Logins a User to the database
+ * \brief Function to get all direct messages from a user
  *
- * This function takes the username, password and returns a QShardPointer<DatabaseResponse> Object
+ * This functions returns all direct messages of a user in json formast in response message
  *
- * \param id ID of the sender
- * \return returns QSharedPointer<DatabaseResponse> Object with message NULL if no messages or json of ID & Username
+ * \param id ID of the user
+ * \return returns QSharedPointer<DatabaseResponse> Object with aall messages in json
  */
 QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(const QString& id) {
     QSqlDatabase db = getDatabase();
@@ -957,11 +946,10 @@ QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(c
         return dbr;
     }
 
-    QJsonArray jsonArray; // Array to hold each message as a JSON object
+    QJsonArray jsonArray;
 
     while (query.next()) {
         QJsonObject messageObject;
-     //   messageObject["chat_id"] = query.value("id").toString();
         messageObject["receiver"] = query.value("receiver_id").toString();
         messageObject["username"] = query.value("username").toString();
         jsonArray.append(messageObject);
@@ -982,7 +970,14 @@ QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(c
 }
 
 
-
+/**
+ * \brief Function to lougout a user (delete token) by given userid
+ *
+ * This functions deletes the if exist of a given userid
+ *
+ * \param id ID of the user
+ * \return returns QSharedPointer<DatabaseResponse> Object with either true or false in success
+ */
 QSharedPointer<DatabaseResponse> databaseHandler::logoutUserByID(const QString& id) {
     QSqlDatabase db = getDatabase();
     QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
@@ -1020,7 +1015,6 @@ QSqlError initDb()
 databaseHandler::databaseHandler(QObject *parent)
     : QObject{parent}
 {
-    // Initialize the database in the constructor
     QSqlError error = initDb();
     if (error.type() != QSqlError::NoError) {
         qCritical() << "Database initialization failed:" << error.text();
