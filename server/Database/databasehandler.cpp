@@ -36,6 +36,67 @@ QSqlDatabase databaseHandler::getDatabase() {
 
 
 /**
+ * \brief Gets all Messages from a Thread
+ *
+ * This function takes the username, password and returns a QShardPointer<DatabaseResponse> Object
+ *
+ * \param id ID of the thread
+ * \return returns QSharedPointer<DatabaseResponse> Object with message json format or null
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::getThreadMessagesByThreadID(const QString& threadID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT id, thread_id, user_id, content, created_at
+        FROM ThreadMessages
+        WHERE thread_id = :thread_id
+        ORDER BY created_at ASC;
+    )");
+
+    query.bindValue(":thread_id", threadID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+    QJsonArray jsonArray;
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        messageObject["id"] = query.value("id").toString();
+        messageObject["thread_id"] = query.value("thread_id").toString();
+        messageObject["user_id"] = query.value("user_id").toString();
+        messageObject["content"] = query.value("content").toString();
+        messageObject["created_at"] = query.value("created_at").toString();
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(true);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
+
+/**
  * \brief Sends message to a thread
  *
  * This function takes the threadID, userID and message and inserts into the database

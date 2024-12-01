@@ -43,7 +43,7 @@ public:
     QSharedPointer<DatabaseResponse> createThread(const QString& channelID,const QString& title,const QString& userID);
     QSharedPointer<DatabaseResponse> getThreadsFromChannel(const QString& channelID);
     QSharedPointer<DatabaseResponse> sendMessageToThread(const QString& threadID,const QString& userID,const QString& message);
-
+    QSharedPointer<DatabaseResponse> getThreadMessagesByThreadID(const QString& threadID);
 
 signals:
 };

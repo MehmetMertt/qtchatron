@@ -111,21 +111,19 @@ int main(int argc, char *argv[])
 */
 
     qDebug() << "1";
-    dbr = dbHandler->sendMessageToThread("1","1","okkkk");
+    dbr = dbHandler->getThreadMessagesByThreadID("1");
     qDebug() << dbr->message();
 
 
     qDebug() << "2";
-    dbr = dbHandler->sendMessageToThread("1","2","dwsdwd");
+    dbr = dbHandler->getThreadMessagesByThreadID("2");
     qDebug() << dbr->message();
 
     qDebug() << "3";
-    dbr = dbHandler->sendMessageToThread("1","1","okkkk");
+    dbr = dbHandler->getThreadMessagesByThreadID("4");
     qDebug() << dbr->message();
 
-    qDebug() << "4";
-    dbr = dbHandler->sendMessageToThread("1","1","");
-    qDebug() << dbr->message();
+
     Server server;
     server.start();
 
