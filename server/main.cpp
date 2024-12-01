@@ -30,6 +30,11 @@ int main(int argc, char *argv[])
 
     qDebug() << dbr->message();
 
+    dbr = dbHandler->checkIfUserExists("Mehmet");
+    qDebug() << dbr->message();
+    dbr = dbHandler->checkIfUserExists("we23");
+    qDebug() << dbr->message();
+
     Server server;
     server.start();
 

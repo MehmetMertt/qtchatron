@@ -21,7 +21,7 @@ public:
     QSharedPointer<DatabaseResponse> logoutUserByID(const QString& id);
     QSharedPointer<DatabaseResponse> getAllDirectMessagesByUserID(const QString& id);
     QSharedPointer<DatabaseResponse> getIDByToken(const QString& token);
-
+    QSharedPointer<DatabaseResponse> checkIfUserExists(const QString& username);
 
 signals:
 };

@@ -49,6 +49,51 @@ QString getSHA256(const QString &input)
     return hash;
 }
 
+
+
+/**
+ * \brief Checks if User exist in database
+ *
+ * Takes username as input and returns DatabaseResponse with either true or false
+ *
+ * \param username username of the user
+ * \return returns QSharedPointer<DatabaseResponse> Object with either true or false
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QString& username) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open!";
+        dbr->setMessage("Internal Database Error. Database is not open. Contact a developer.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare("SELECT id from Users where Users.username = :username");
+    query.bindValue(":username", username);
+
+
+    if (!query.exec()) {
+        QSqlError error = query.lastError();
+        dbr->setMessage("An unexpected database error occurred: " + error.text());
+        return dbr;
+        }
+
+    if(query.next()) {
+            dbr->setSuccess(true);
+            QString id = query.value("id").toString();
+            dbr->setMessage("id:"+id);
+            return dbr;
+    }
+
+    dbr->setMessage("User not found");
+    return dbr;
+}
+
+
+
 /**
  * \brief Adds a User to the database
  *
