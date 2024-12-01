@@ -17,6 +17,8 @@ public:
     QString username() const;
     void setUsername(const QString &newUsername);
 
+    Q_INVOKABLE QString getInitials();
+
 private:
     QString _username;
 

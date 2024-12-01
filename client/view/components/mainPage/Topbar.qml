@@ -16,6 +16,7 @@ Rectangle {
     property var pageType: "dm"
 
     signal toggleChannelInfobar()
+    signal newChatClicked()
 
     Rectangle {
         color: "transparent"
@@ -86,6 +87,11 @@ Rectangle {
                 color: Material.primary
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                console.log("new chat clicked")
+                topbar.newChatClicked()
             }
         }
 

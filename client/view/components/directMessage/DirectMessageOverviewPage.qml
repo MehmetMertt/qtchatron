@@ -5,6 +5,8 @@ import QtQuick.Controls.Material
 
 import Client 1.0
 
+pragma ComponentBehavior: Bound
+
 Item {
     id: dmOverviewPage
 
@@ -36,9 +38,11 @@ Item {
 
 
                 spacing: 10
-                model: userDmList
+                model: dmOverviewPage.userDmList
 
                 delegate: Item {
+                    id: listItem
+                    required property var index
                     width: parent.width  // Ensure it matches ListView width
                     height: 60  // Adjust according to your item size
 
@@ -47,7 +51,7 @@ Item {
                       spacing: 5
 
                       DirectMessageListItem {
-                          name: dmList.model[index].username
+                          user: dmList.model[listItem.index]
                           Layout.preferredWidth: parent.width - parent.width/10  // Expand to use full width
                           Layout.preferredHeight: 50  // Adjust according to content
                       }
@@ -56,7 +60,7 @@ Item {
                           color: Material.background  // Separator color
                           Layout.preferredHeight: 1
                           Layout.preferredWidth: parent.width - parent.width/10  // Use the full width
-                          visible: (index !== dmList.count - 1)  // Hide separator for the last item
+                          visible: (listItem.index !== dmList.count - 1)  // Hide separator for the last item
                       }
                     }
                     }

@@ -1,13 +1,19 @@
 #include "mainpagerouter.h"
 
-MainPageRouter::MainPageRouter(QObject *parent) : QObject(parent), _currentItem(DM_OVERVIEW), _topbarTitle("Direct Messages"), _topbarType("dm") {}
+MainPageRouter::MainPageRouter(QObject *parent) : QObject(parent),
+    _currentItem(DM_OVERVIEW),
+    _topbarTitle("Direct Messages"),
+    _topbarType("dm")
+{}
 
 MainPageRouter::MainArea MainPageRouter::currentItem() const {
     return _currentItem;
 }
 
 void MainPageRouter::setCurrentItem(MainPageRouter::MainArea newCurrentItem, QString newTitle) {
-    if (_currentItem != newCurrentItem) {
+    qDebug() << newTitle;
+    if (_currentItem != newCurrentItem || newTitle != _topbarTitle) {
+        qDebug() << "new item";
         _currentItem = newCurrentItem;
 
          _navigationStack.push(newCurrentItem);
@@ -51,7 +57,13 @@ void MainPageRouter::triggerBack()
     _currentItem = MainArea::DM_OVERVIEW;
     emit backButtonPressed();  // Call this when the back button is pressed
     emit topbarTitleChanged();
+    emit topbarTypeChanged();
     emit currentItemChanged();
+}
+
+void MainPageRouter::closeNewChatPopup()
+{
+    emit closePopup();
 }
 
 void MainPageRouter::setTopbarTitle(QString newTitle)

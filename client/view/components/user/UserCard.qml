@@ -1,12 +1,16 @@
 import QtQuick 2.15
 import QtQuick.Layouts
 
+import Client 1.0
+
 Rectangle {
     id: userCard
     height: 40
     radius: 5
     color: "transparent"
     width: parent.width
+
+    property var initial: "P"
 
     Rectangle {
         id: background
@@ -48,7 +52,10 @@ Rectangle {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: console.log("Channel clicked: " + model.name)
+        onClicked: {
+            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, model.name)
+            console.log("Channel clicked: " + model.name)
+        }
 
         // Optionally handle hover effect if you want a different color on mouse enter/leave
         /*onMouseAreaClicked: {

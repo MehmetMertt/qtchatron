@@ -26,6 +26,7 @@ public:
     Q_INVOKABLE void setTopbarTitle(QString newTitle);
     Q_INVOKABLE void back();
     Q_INVOKABLE void triggerBack();
+    Q_INVOKABLE void closeNewChatPopup();
 
     QString topbarTitle() const;
     QString topbarType() const;
@@ -36,9 +37,12 @@ private:
     QString _topbarType;
     QStack<MainArea> _navigationStack;
 
+
+
 signals:
     void currentItemChanged();
     void topbarTitleChanged();
     void topbarTypeChanged();
     void backButtonPressed();
+    void closePopup();
 };

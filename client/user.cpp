@@ -21,3 +21,8 @@ void User::setUsername(const QString &newUsername)
     _username = newUsername;
     emit usernameChanged();
 }
+
+QString User::getInitials()
+{
+    return _username.left(1).toUpper();
+}

@@ -4,6 +4,9 @@ import QtQuick.Controls.Material 2.15
 
 Rectangle {
     id: userIcon
+
+    property var initial: "P"
+
     width: 45
     height: 45
     radius: width / 2
@@ -12,7 +15,7 @@ Rectangle {
     // Profile initials or icon
     Text {
         id: initialText
-        text: "A" // Placeholder for profile initial or icon
+        text: userIcon.initial // Placeholder for profile initial or icon
         color: "white"
         font.pixelSize: 24
         anchors.centerIn: parent

@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts
-import QtQuick.Controls.Material 2.15
+import QtQuick.Controls.Material
 
 import Client 1.0
 
@@ -37,6 +37,10 @@ Page {
         onToggleChannelInfobar: {
             console.log("toggle")
         }
+
+        onNewChatClicked: {
+            addChatPopup.open()
+        }
     }
 
     Connections {
@@ -50,6 +54,11 @@ Page {
                 mainPageStack.pop();
             }
         }
+
+        function onClosePopup() {
+            addChatPopup.close()
+        }
+
     }
 
 
@@ -87,6 +96,36 @@ Page {
         initialItem: dmOverviewPage
 
     }
+
+    Popup {
+        id: addChatPopup
+        modal: true
+        focus: true
+        anchors.centerIn: parent
+        width: parent.width/2
+        height: parent.height/2
+
+        // Using Loader to load different content dynamically
+        Loader {
+            id: popupLoader
+            anchors.fill: parent
+
+            // Initially load AddNewChat
+            sourceComponent: addNewChat
+        }
+
+        // Close the popup on clicking outside of it
+
+    }
+
+    Component {
+        id: addNewChat
+        AddChatPopup {
+
+        }
+    }
+
+
 
     Component{
         id: channelPage;

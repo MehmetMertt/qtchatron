@@ -8,7 +8,7 @@ import "../user"
 
 Rectangle {
     id: dmListItem
-    required property var name
+    required property User user
 
     width: parent.width - parent.width/10
     height: 60
@@ -34,12 +34,13 @@ Rectangle {
 
         // User Icon (e.g., Avatar or Image)
         UserIcon {
+            initial: dmListItem.user.getInitials()
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter  // Vertically center the icon
         }
 
         // Text Label
         Text {
-            text: dmListItem.name  // Display the channel or user name
+            text: dmListItem.user.username  // Display the channel or user name
             color: "white"  // Text color
             font.pixelSize: 18  // Adjust font size as needed // Vertically center the text
         }
@@ -54,8 +55,8 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onClicked: {
-            console.log("DM clicked: " + dmListItem.name)
-            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, dmListItem.name)
+            console.log("DM clicked: " + dmListItem.user.username)
+            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, dmListItem.user.username)
             //MainPageRouter.setTopbarTitle(dmListItem.name)
         }
 
