@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtQml>
 
+
 class User : public QObject
 {
     Q_OBJECT
@@ -24,6 +25,7 @@ private:
 
 signals:
     void usernameChanged();
+
 };
 
 #endif // USER_H

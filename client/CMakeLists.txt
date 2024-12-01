@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QT_QML_GENERATE_QMLLS_INI ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -29,7 +29,15 @@ qt_add_qml_module(appClient
     SOURCES sessionuser.h sessionuser.cpp
     SOURCES user.h user.cpp
     SOURCES channelmodel.h channelmodel.cpp
+    SOURCES router.h router.cpp
+    SOURCES authmodel.h authmodel.cpp
+    SOURCES authcontroller.h authcontroller.cpp
+    SOURCES user.h user.cpp
+    SOURCES sessionmodel.h sessionmodel.cpp
+    SOURCES Protocol/protocol.h Protocol/protocol.cpp
 )
+
+# Add the SharedProtocol subdirectory
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -43,7 +51,7 @@ set_target_properties(appClient PROPERTIES
 )
 
 target_link_libraries(appClient
-    PRIVATE Qt6::Quick
+    PRIVATE Qt6::Quick Qt6::QuickControls2
 )
 
 include(GNUInstallDirs)

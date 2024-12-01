@@ -1,8 +1,10 @@
 #include "user.h"
 
+
 User::User(QObject *parent)
     : QObject{parent}
 {}
+
 
 User::User(QString username, QObject *parent)
     : QObject{parent},
@@ -26,3 +28,4 @@ QString User::getInitials()
 {
     return _username.left(1).toUpper();
 }
+

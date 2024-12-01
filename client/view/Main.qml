@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 
 import Client 1.0
 
-// import "styles"
 
 import "pages"
 
@@ -16,20 +15,53 @@ Window {
     visible: true
     title: qsTr("QChatron")
 
-
     Material.theme: Material.Dark // or Material.Dark
     Material.accent: Material.Blue
     Material.primary: Material.Blue
 
-    Component.onCompleted: {
-        clientController.runClient()
-    }
 
     ClientController {
         id: clientController
 
         onClientReady: {
-            mainStack.push(mainPage)
+            mainStack.push(loginPage)
+        }
+    }
+
+    Connections {
+        target: Router
+        function onCurrentPageChanged() {
+            //console.log(Router.currentPage)
+            root.setCurrentPage(Router.currentPage)
+        }
+
+        function onLoadingReadyChanged() {
+            //console.log("main loading ready")
+            clientController.runClient()
+        }
+    }
+
+
+    function setCurrentPage(c_page_index) {
+        let pageToShow;
+
+        if (c_page_index === 1) {
+            pageToShow = mainPage;
+        } else if (c_page_index === 2) {
+            pageToShow = loginPage;
+        } else {
+            pageToShow = signupPage;
+        }
+
+        // Check if the page is already on the stack
+        let existingPage = mainStack.find(item => item === pageToShow, StackView.FirstToLast);
+
+        if (existingPage) {
+            // The page is already on the stack, pop to it
+            mainStack.pop(mainStack.indexOf(existingPage) - mainStack.depth + 1);
+        } else {
+            // Page is not in the stack, push it
+            mainStack.push(pageToShow);
         }
     }
 
@@ -37,15 +69,39 @@ Window {
     StackView {
         id: mainStack
         anchors.fill: parent
-        initialItem: mainPage
+        visible: true
 
-        Component{
-            id: mainPage
-            MainPage{
 
-            }
+        initialItem: loadingPage
+    }
+
+    Component{
+        id: loadingPage
+        LoadingPage{
+
         }
     }
+
+    Component{
+        id:signupPage;
+        SignupPage{
+
+        }
+    }
+
+    Component {
+        id: mainPage
+        MainPage {
+
+        }
+    }
+    Component {
+        id:loginPage;
+        LoginPage{
+
+        }
+    }
+
 
 
 

@@ -2,7 +2,7 @@
 #define CLIENT_H
 
 #include <QObject>
-#include "Communicator/Communicator.h"
+
 
 class Client : public QObject
 {
@@ -14,7 +14,6 @@ public:
 
 private:
     QPair<QString, quint16> loadConfiguration();
-    Communicator _communicator;
 
 signals:
     void encryptionSuccess();

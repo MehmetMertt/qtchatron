@@ -5,16 +5,18 @@ import QtQuick.Controls.Material 2.15
 
 import Client 1.0
 
-Page {
-    id: loginPage
-    title: "Login"
+Item {
+    id: signupPage
 
-    AuthModel{id: authModel}
+    signal switchToLogin
 
     function setError(reason) {
         errorMessage.visible = true
         errorMessage.text = reason
+        busyIndicator.running = false // Stop indicator if there's an error
     }
+
+    AuthModel { id: authModel; }
 
     Rectangle {
         anchors.fill: parent
@@ -25,29 +27,17 @@ Page {
         id: formLayout
         anchors.centerIn: parent
         spacing: 20
-        width: parent.width * 0.3
-
+        width: parent.width * 0.25
 
         // Title
         Text {
-            text: "Login"
+            text: "Signup"
             font.pixelSize: 36
             font.bold: true
             font.family: "Roboto"
             color: Material.foreground
+            horizontalAlignment: Text.AlignVCenter
             Layout.alignment: Qt.AlignHCenter
-        }
-
-        Text {
-            text: Router.pageMessage
-            font.pixelSize: 18
-            color: "green"
-            font.family: "Roboto"
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: parent.width
-            wrapMode: Text.WordWrap
-
-            visible: Router.pageMessage != ""
         }
 
         // Username Field
@@ -73,17 +63,16 @@ Page {
 
         Button {
             id: signupButton
-            text: qsTr("Login")
+            text: qsTr("Signup")
             Layout.fillWidth: true
             font.pixelSize: 22
-            //flat: true
             hoverEnabled: true
             Material.elevation: 0
             Material.roundedScale: Material.SmallScale
             Material.background: Material.primary
 
             contentItem: Text {
-                text: qsTr("Login")
+                text: qsTr("Signup")
                 font.pixelSize: 22
                 color: "white"
                 horizontalAlignment: Text.AlignHCenter
@@ -91,8 +80,17 @@ Page {
             }
 
             onClicked: {
-                authModel.login()
+                busyIndicator.running = true // Show progress
+                authModel.signup()
             }
+        }
+
+        // Busy Indicator
+        BusyIndicator {
+            id: busyIndicator
+            running: false
+            visible: running
+            Layout.alignment: Qt.AlignHCenter
         }
 
         // Error Handling
@@ -102,23 +100,24 @@ Page {
             color: "red"
             font.pixelSize: 14
             Layout.alignment: Qt.AlignHCenter
-            Layout.maximumWidth: parent.width
-            wrapMode: Text.WordWrap
         }
 
         Connections {
             target: authModel
+
             function onAuthMethodSuccessful() {
-                //console.log("Login successful!");
-                Router.setCurrentPage(1); // Navigate to MainPage
+                busyIndicator.running = false
+                errorMessage.visible = false
+                Router.setCurrentPage(2, "Signup successful, please login now!")
             }
-            function onAuthMethodFailed (reason) {
-                loginPage.setError(reason)
+
+            function onAuthMethodFailed(reason) {
+                signupPage.setError(reason)
             }
         }
 
         Text {
-            text: "Forgot password?"
+            text: "Login instead?"
             color: Material.primary
             font.pixelSize: 16
             horizontalAlignment: Text.AlignHCenter
@@ -127,23 +126,8 @@ Page {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    //console.log("Forgot password clicked!")
-                }
-            }
-        }
-
-        Text {
-            text: "Signup instead?"
-            color: Material.primary
-            font.pixelSize: 16
-            horizontalAlignment: Text.AlignHCenter
-            Layout.alignment: Qt.AlignHCenter
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    Router.setCurrentPage(3)
-                    //console.log("Signup instead clicked!")
+                    Router.setCurrentPage(2)
+                    //console.log("Login instead clicked!")
                 }
             }
         }

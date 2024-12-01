@@ -1,3 +1,4 @@
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts
@@ -38,6 +39,7 @@ Page {
         onNewChatClicked: {
             popupLoader.setSource("../components/mainPage/AddChatPopup.qml")
             addChatPopup.open()
+
         }
     }
 
@@ -115,11 +117,13 @@ Page {
 
             // Initially load AddNewChat
             sourceComponent: addNewChat
+
         }
 
         // Close the popup on clicking outside of it
 
     }
+
 
     Component {
         id: addNewChat
