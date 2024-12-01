@@ -8,8 +8,8 @@ Rectangle {
     property var initial: "P"
     property double scaleI: 1
 
-    width: 45
-    height: 45
+    width: 40
+    height: 40
     radius: width / 2
     color: Material.Grey
 
