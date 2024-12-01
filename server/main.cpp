@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     databaseHandler *dbHandler = new databaseHandler();
 
-    QSharedPointer<DatabaseResponse> dbr = dbHandler->AddUser("myUser","myPassword","Hi");
+    QSharedPointer<DatabaseResponse> dbr;
    // qDebug() << dbr->message();
 
   //  dbr = dbHandler->LoginUser("Mehmwewett","hwhwhdwhdwdw");
@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
     //dbr = dbHandler.getAllDirectMessagesByUserID("2");
 
    // qDebug() << dbr->message();
+    /*
     qDebug() << "2";
 
     dbr = dbHandler->getChannelsFromUser("2");
@@ -62,8 +63,8 @@ int main(int argc, char *argv[])
 
     dbr = dbHandler->createChannel("qtiscool","efef",true,"2");
     qDebug() << dbr->message();
-
-
+*/
+/
     /*
     dbr = dbHandler->checkIfUserExists("Mehmet");
     qDebug() << dbr->message();

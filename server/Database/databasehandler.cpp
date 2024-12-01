@@ -258,6 +258,39 @@ QSharedPointer<DatabaseResponse> databaseHandler::getChannels() {
 }
 
 
+bool databaseHandler::isUserInChannel(const QString& userID, const QString& channelID) {
+    QSqlDatabase db = getDatabase();
+    // Check if the database is open
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open.";
+        return false;
+    }
+
+    // Prepare the SQL query
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT COUNT(*) FROM ChannelUser where channel_id = :channel_id and user_id = :user_id;
+    )");
+
+    // Bind parameters
+    query.bindValue(":user_id", userID);
+    query.bindValue(":channel_id", channelID);
+
+    // Execute the query
+    if (!query.exec()) {
+        qDebug() << "Database query failed:" << query.lastError().text();
+        return false;
+    }
+
+    // Check the result
+    if (query.next()) {
+        int count = query.value(0).toInt();
+        return count > 0; // Return true if the count is greater than 0
+    }
+
+    return false;
+}
+
 
 /**
  * \brief Gets all DIrect Messages between two UserID's
@@ -314,6 +347,58 @@ QSharedPointer<DatabaseResponse> databaseHandler::getChannelsFromUser(const QStr
     return dbr;
 }
 
+/**
+ * \brief Sends message to a channel
+ *
+ * This function takes the channelID, userID and message and inserts into the database
+ *
+ * \param channelID ID of the channel
+ * \param userID ID of the user
+ * \param message Message to send
+ * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToChannel(const QString& channelID,const QString& userID,const QString& message) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+
+    if(!isUserInChannel(userID,channelID)){
+        dbr->setMessage("User is not member of this channel");
+        return dbr;
+    }
+
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+    INSERT INTO ChannelMessages
+    (channel_id, user_id, content)
+    VALUES(:channel_id, :user_id, :content);
+    )");
+    query.bindValue(":channel_id", channelID);
+    query.bindValue(":user_id", userID);
+    query.bindValue(":content", message);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    if (query.numRowsAffected() > 0) {
+        dbr->setMessage("Message successfully inserted.");
+        dbr->setSuccess(true);
+    } else {
+        dbr->setMessage("Insertion succeeded, but no rows were affected.");
+    }
+    return dbr;
+}
+
 
 /**
  * \brief Gets all DIrect Messages between two UserID's
@@ -330,6 +415,11 @@ QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToUserID(const QStr
 
     if (!db.isOpen()) {
         dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    if(message.length() <= 0){
+        dbr->setMessage("Cannot sent empty text");
         return dbr;
     }
 
