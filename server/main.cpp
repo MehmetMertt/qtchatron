@@ -26,8 +26,14 @@ int main(int argc, char *argv[])
 
    // qDebug() << dbr->message();
 
-    dbr = dbHandler->getDirectMessagesBetweenUserByID("2","1");
+    dbr = dbHandler->sendMessageToUserID("2","1","siehst du das?");
+    qDebug() << dbr->message();
 
+    dbr = dbHandler->sendMessageToUserID("1","2","ja");
+    qDebug() << dbr->message();
+
+
+    dbr = dbHandler->getDirectMessagesBetweenUserByID("2","1");
     qDebug() << dbr->message();
 
     /*

@@ -92,6 +92,58 @@ QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QStrin
     return dbr;
 }
 
+/*
+
+ *
+ * */
+
+
+/**
+ * \brief Gets all DIrect Messages between two UserID's
+ *
+ * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
+ *
+ * \param id ID of the first user
+ * \param id ID of the second user
+ * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::sendMessageToUserID(const QString& senderID,const QString& receiverID,const QString& message) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        INSERT INTO DirectMessages
+        (sender_id, receiver_id, content)
+        VALUES(:sender_id, :receiver_id, :content);
+    )");
+    query.bindValue(":sender_id", senderID);
+    query.bindValue(":receiver_id", receiverID);
+    query.bindValue(":content", message);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    if (query.numRowsAffected() > 0) {
+        dbr->setMessage("Message successfully inserted.");
+        dbr->setSuccess(true);
+    } else {
+        dbr->setMessage("Insertion succeeded, but no rows were affected.");
+    }
+    return dbr;
+}
+
+
+
 /**
  * \brief Gets all DIrect Messages between two UserID's
  *
