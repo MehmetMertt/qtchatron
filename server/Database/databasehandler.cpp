@@ -94,6 +94,171 @@ QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QStrin
 
 
 
+
+
+
+
+
+/*
+INSERT INTO Channels
+(name, "type", access_type,invite_link)
+VALUES('fortnite gamers', 'text', 'public',null);
+
+
+access_type might be public or private
+type might be text or voice
+
+INSERT INTO Channels
+(name, "type", access_type,invite_link)
+VALUES('twentyonegroup', 'text', 'private','HAjswwdkk2S');
+
+
+     *
+     * */
+
+
+/**
+ * \brief Creates a Channel
+ *
+ * Takes the name, type and access_type as parameter and insert the channel into the database
+ *
+ * \param name name of the channel
+ * \param type type of the channel (either voice or text)
+ * \param isPublic either true to have a public channel or false to have a private channel
+
+ * \return returns QSharedPointer<DatabaseResponse> with success and if private -> invite link
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& name,const QString& type,bool isPublic,const QString& user_id) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+
+    QString access_type = "public";
+    if(!isPublic){
+        access_type = "private";
+    }
+
+    if(type != "voice" && type != "text"){
+        dbr->setMessage("Invalid Type. Only voice or text");
+        return dbr;
+    }
+
+    if(name.length() < 4){
+        dbr->setMessage("Invalid Name. Name must be atleast 4 characters long!");
+        return dbr;
+    }
+
+    query.prepare(R"(
+        INSERT INTO Channels
+        (name, type, access_type,invite_link,admin_id)
+        VALUES(:name, :type, :access_type,:link,:admin_id);
+    )");
+
+
+    QString invite;
+    query.bindValue(":name", name);
+    query.bindValue(":type", type);
+    query.bindValue(":admin_id", user_id);
+    query.bindValue(":access_type", access_type);
+    if(!isPublic){
+        invite = generateRandomString(6);
+        query.bindValue(":link",invite);
+
+    }else {
+        query.bindValue(":link", QVariant(QVariant::String)); //deprecated, but other options didint work
+    }
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+    if(!isPublic){
+        dbr->setMessage("invite:"+invite);
+    } else {
+        dbr->setMessage("channel created");
+    }
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
+
+
+/**
+ * \brief Gets all DIrect Messages between two UserID's
+ *
+ * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
+ *
+ * \param id ID of the first user
+ * \param id ID of the second user
+ * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::getChannels() {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT id,name,type,access_type,invite_link,created_at
+        FROM Channels ORDER BY created_at ASC;
+    )");
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        //   messageObject["chat_id"] = query.value("id").toString();
+        messageObject["id"] = query.value("id").toString();
+        messageObject["name"] = query.value("name").toString();
+
+        messageObject["type"] = query.value("type").toString();
+
+        messageObject["access_type"] = query.value("access_type").toString();
+        messageObject["invite_link"] = query.value("invite_link").toString();
+        messageObject["created_at"] = query.value("created_at").toString();
+
+
+
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
+
 /**
  * \brief Gets all DIrect Messages between two UserID's
  *

@@ -24,6 +24,10 @@ public:
     QSharedPointer<DatabaseResponse> checkIfUserExists(const QString& username);
     QSharedPointer<DatabaseResponse> getDirectMessagesBetweenUserByID(const QString& userid1,const QString& userid2);
     QSharedPointer<DatabaseResponse> sendMessageToUserID(const QString& senderID,const QString& receiverID,const QString& message);
+    QSharedPointer<DatabaseResponse> getChannels();
+    QSharedPointer<DatabaseResponse> createChannel(const QString& name,const QString& type,bool isPublic,const QString& user_id);
+
+
 
 signals:
 };

@@ -46,6 +46,24 @@ int main(int argc, char *argv[])
 
     qDebug() << dbr->message();
 
+    qDebug() << "Testing GetChannels()";
+
+    dbr = dbHandler->getChannels();
+    qDebug() << dbr->message();
+
+
+    dbr = dbHandler->createChannel("qtiscool","text",true,"2");
+    qDebug() << dbr->message();
+
+
+    dbr = dbHandler->createChannel("qtiscool","voice",false,"1");
+    qDebug() << dbr->message();
+
+
+    dbr = dbHandler->createChannel("qtiscool","efef",true,"2");
+    qDebug() << dbr->message();
+
+
     /*
     dbr = dbHandler->checkIfUserExists("Mehmet");
     qDebug() << dbr->message();
