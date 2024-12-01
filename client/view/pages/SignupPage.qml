@@ -13,9 +13,10 @@ Item {
     function setError(reason) {
         errorMessage.visible = true
         errorMessage.text = reason
+        busyIndicator.running = false // Stop indicator if there's an error
     }
 
-    AuthModel{id: authModel;}
+    AuthModel { id: authModel; }
 
     Rectangle {
         anchors.fill: parent
@@ -27,7 +28,6 @@ Item {
         anchors.centerIn: parent
         spacing: 20
         width: parent.width * 0.25
-
 
         // Title
         Text {
@@ -66,7 +66,6 @@ Item {
             text: qsTr("Signup")
             Layout.fillWidth: true
             font.pixelSize: 22
-            //flat: true
             hoverEnabled: true
             Material.elevation: 0
             Material.roundedScale: Material.SmallScale
@@ -81,8 +80,17 @@ Item {
             }
 
             onClicked: {
+                busyIndicator.running = true // Show progress
                 authModel.signup()
             }
+        }
+
+        // Busy Indicator
+        BusyIndicator {
+            id: busyIndicator
+            running: false
+            visible: running
+            Layout.alignment: Qt.AlignHCenter
         }
 
         // Error Handling
@@ -96,9 +104,13 @@ Item {
 
         Connections {
             target: authModel
+
             function onAuthMethodSuccessful() {
-                Router.setCurrentPage(2); // Navigate to Login
+                busyIndicator.running = false
+                errorMessage.visible = false
+                Router.setCurrentPage(2, "Signup successful, please login now!")
             }
+
             function onAuthMethodFailed(reason) {
                 signupPage.setError(reason)
             }
@@ -115,8 +127,7 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     Router.setCurrentPage(2)
-                    //signupPage.switchToLogin()
-                    console.log("Login instead clicked!")
+                    //console.log("Login instead clicked!")
                 }
             }
         }

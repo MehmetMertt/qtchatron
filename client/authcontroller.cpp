@@ -11,24 +11,29 @@ AuthController::AuthController(QObject *parent)
 {
 }
 
-void AuthController::login(const QString &username, const QString &password,
-                           const std::function<void(bool, const QString &)> &callback)
-{
-    qDebug() << "Authenticating login with username:" << username;
-
-    _loginCallback = callback;
-
-    auto *communicator = Communicator::getInstance();
-    disconnect(communicator, &Communicator::loginResponseReceived, this, &AuthController::handleLoginResponse);
-    connect(communicator, &Communicator::loginResponseReceived, this, &AuthController::handleLoginResponse);
-
+std::string AuthController::dataToJsonString(const QString &username, const QString &password) {
     QJsonObject jsonObject;
     jsonObject["username"] = username;
     jsonObject["password"] = password;
 
     QJsonDocument jsonDoc(jsonObject);
 
-    communicator->sendData(Protocol(MessageType::COMMAND_TRANSFER, "login_request", QString(jsonDoc.toJson(QJsonDocument::Compact)).toStdString()));
+    return QString(jsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+}
+
+void AuthController::login(const QString &username, const QString &password,
+                           const std::function<void(bool, const QString &)> &callback)
+{
+    //qDebug() << "Authenticating login with username:" << username;
+
+    _authCallback = callback;
+
+    auto *communicator = Communicator::getInstance();
+    disconnect(communicator, &Communicator::authResponseReceived, this, &AuthController::handleAuthResponseCallback);
+    connect(communicator, &Communicator::authResponseReceived, this, &AuthController::handleAuthResponseCallback);
+
+
+    communicator->sendData(Protocol(MessageType::COMMAND_TRANSFER, "login_request", this->dataToJsonString(username, password)));
 
     // Simulate backend call
    /* if (username == "admin" && password == "password") {
@@ -38,9 +43,9 @@ void AuthController::login(const QString &username, const QString &password,
     }*/
 }
 
-void AuthController::handleLoginResponse(const bool success, const QString message)
+void AuthController::handleAuthResponseCallback(const bool success, const QString message)
 {
-    qDebug() << "login response: " << success << ": " << message;
+    //qDebug() << "login response: " << success << ": " << message;
 
     QString callbackMessage = message;
 
@@ -48,9 +53,9 @@ void AuthController::handleLoginResponse(const bool success, const QString messa
         callbackMessage = "An unexpected error occured";
     }
 
-    if (_loginCallback) {
-        _loginCallback(success, callbackMessage);
-        _loginCallback = nullptr; // Reset to avoid calling it multiple times
+    if (_authCallback) {
+        _authCallback(success, callbackMessage);
+        _authCallback = nullptr; // Reset to avoid calling it multiple times
     }
 }
 
@@ -59,14 +64,16 @@ void AuthController::handleLoginResponse(const bool success, const QString messa
 void AuthController::signup(const QString &username, const QString &password,
                             const std::function<void(bool, const QString &)> &callback)
 {
-    qDebug() << "Processing signup for username:" << username;
+    //qDebug() << "Processing signup for username:" << username;
 
-    // Simulate backend call
-    if (!username.isEmpty() && !password.isEmpty()) {
-        callback(true, "Signup successful");
-    } else {
-        callback(false, "Invalid data");
-    }
+    _authCallback = callback;
+
+    auto *communicator = Communicator::getInstance();
+    disconnect(communicator, &Communicator::authResponseReceived, this, &AuthController::handleAuthResponseCallback);
+    connect(communicator, &Communicator::authResponseReceived, this, &AuthController::handleAuthResponseCallback);
+
+
+    communicator->sendData(Protocol(MessageType::COMMAND_TRANSFER, "signup_request", this->dataToJsonString(username, password)));
 }
 
 void AuthController::logout(const std::function<void (bool, const QString &)> &callback)

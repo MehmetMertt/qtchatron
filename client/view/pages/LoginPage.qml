@@ -38,6 +38,18 @@ Page {
             Layout.alignment: Qt.AlignHCenter
         }
 
+        Text {
+            text: Router.pageMessage
+            font.pixelSize: 18
+            color: "green"
+            font.family: "Roboto"
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: parent.width
+            wrapMode: Text.WordWrap
+
+            visible: Router.pageMessage != ""
+        }
+
         // Username Field
         TextField {
             id: usernameField
@@ -97,7 +109,7 @@ Page {
         Connections {
             target: authModel
             function onAuthMethodSuccessful() {
-                console.log("Login successful!");
+                //console.log("Login successful!");
                 Router.setCurrentPage(1); // Navigate to MainPage
             }
             function onAuthMethodFailed (reason) {
@@ -114,7 +126,9 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: console.log("Forgot password clicked!")
+                onClicked: {
+                    //console.log("Forgot password clicked!")
+                }
             }
         }
 
@@ -129,7 +143,7 @@ Page {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     Router.setCurrentPage(3)
-                    console.log("Signup instead clicked!")
+                    //console.log("Signup instead clicked!")
                 }
             }
         }

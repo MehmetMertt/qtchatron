@@ -1,9 +1,20 @@
 import QtQuick 6.8
 import QtQuick.Controls 6.8
 
+import Client 1.0
+
 Page {
     id: loadingPage
-    signal loadingFinished
+
+    Timer {
+        interval: 500  // Example delay for loading simulation
+        running: true
+        repeat: false
+        onTriggered: {
+            //console.log("set loading ready page")
+            Router.setLoadingReady()  // Emit the signal when loading is done
+        }
+    }
 
     Rectangle {
         id: loadingPageBackground
@@ -31,13 +42,13 @@ Page {
             }
         }
 
-
-        // Simulate loading (trigger in C++ backend for real tasks)
-        Timer {
-            interval: 3000  // 3 seconds for demo
-            running: true
-            repeat: false
-            onTriggered: loadingPage.loadingFinished()
+        Text {
+            text: "by GROUP TWENTY ONE"
+            font.pixelSize: 14
+            color: "#555555"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10
         }
     }
 }

@@ -2,8 +2,6 @@
 #include "authcontroller.h" // Include the controller header
 #include <QDebug>
 
-#include "sessionmodel.h"
-
 AuthModel::AuthModel(QObject *parent)
     : QObject(parent),
     _username(""),

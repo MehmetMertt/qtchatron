@@ -30,7 +30,7 @@ signals:
     void logMessage(const QString &message);
     void messageReceived(const QString &sender, const QString &message);
     void socketEncryptionSuccess();
-    void loginResponseReceived(const bool success, const QString message);
+    void authResponseReceived(const bool success, const QString message);
 
 private slots:
     void onEncrypted();

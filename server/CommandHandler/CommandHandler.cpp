@@ -16,7 +16,7 @@ std::string CommandHandler::routeCommand(const Command& command)
         // Respond with "hello"
         response = "hello";
     }
-    else if (cmd == "login_request") {
+    else if (cmd == "login_request" || cmd == "signup_request") {
         // Respond with request for username
         QString jsonQString = QString::fromStdString(params);
 
@@ -34,7 +34,7 @@ std::string CommandHandler::routeCommand(const Command& command)
             qDebug() << "Username:" << username;
             qDebug() << "Password:" << password;
 
-            auto dbResponse = _dbHandler->LoginUser(username, password);
+            auto dbResponse = cmd == "login_request" ? _dbHandler->LoginUser(username, password) : _dbHandler->AddUser(username, password, "");
 
             qDebug() << "db response: " << dbResponse->success() << ": " << dbResponse->message();
             QJsonObject responseObject;
@@ -61,8 +61,8 @@ std::string CommandHandler::routeCommand(const Command& command)
 
 QString CommandHandler::getCommandResponseName(const Command &command)
 {
-    if(command.command() == "login_request") {
-        return "login_response";
+    if(command.command() == "login_request" || command.command() == "signup_request") {
+        return "auth_response";
     } else {
         return "unknown response";
     }

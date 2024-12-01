@@ -126,7 +126,7 @@ void Communicator::handleProtocolMessage(const Protocol& p)
     case MessageType::COMMAND_TRANSFER:
         // implement command_transfer
 
-        if(p.getName() == "login_response") {
+        if(p.getName() == "auth_response") {
 
             QString jsonQString = QString::fromStdString(p.getPayload());
 
@@ -141,7 +141,7 @@ void Communicator::handleProtocolMessage(const Protocol& p)
                 bool success = jsonObject["success"].toBool(false);
                 QString message = jsonObject["message"].toString("An unexpected error occured!");
 
-                emit loginResponseReceived(success, message);
+                emit authResponseReceived(success, message);
             }
 
         }

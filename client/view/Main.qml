@@ -18,24 +18,24 @@ Window {
     Material.accent: Material.Blue
     Material.primary: Material.Blue
 
-    Component.onCompleted: {
-        clientController.runClient()
-        console.log(mainStack.currentItem)
-    }
-
     ClientController {
         id: clientController
 
         onClientReady: {
-            //mainStack.push(mainPage)
+            mainStack.push(loginPage)
         }
     }
 
     Connections {
         target: Router
         function onCurrentPageChanged() {
-            console.log(Router.currentPage)
+            //console.log(Router.currentPage)
             root.setCurrentPage(Router.currentPage)
+        }
+
+        function onLoadingReadyChanged() {
+            //console.log("main loading ready")
+            clientController.runClient()
         }
     }
 
@@ -69,7 +69,14 @@ Window {
         anchors.fill: parent
         visible: true
 
-        initialItem: loginPage
+        initialItem: loadingPage
+    }
+
+    Component{
+        id: loadingPage
+        LoadingPage{
+
+        }
     }
 
     Component{
