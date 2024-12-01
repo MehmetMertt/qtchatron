@@ -1,35 +1,33 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(client VERSION 0.1 LANGUAGES CXX)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+project(Client VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(QT_QML_GENERATE_QMLLS_INI ON)
+set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
-qt_add_executable(appclient
+qt_add_executable(appClient
     main.cpp
 )
 
-qt_add_qml_module(appclient
-    URI appclient
+qt_add_qml_module(appClient
+    URI Client
     VERSION 1.0
-    QML_FILES
-        Main.qml
-    SOURCES
-        Communicator/Communicator.h
-        Communicator/Communicator.cpp
-    RESOURCES
-        certs/client.crt
-        certs/client.key
-        certs/sslserver.pem
-        certs/server.crt
-        QML_FILES config/config.json
-        SOURCES
-        SOURCES Protocol/protocol.h Protocol/protocol.cpp
+    RESOURCES qml.qrc
+    RESOURCES res.qrc
+    SOURCES clientcontroller.h clientcontroller.cpp
+    SOURCES client.h client.cpp
+    SOURCES Communicator/Communicator.h Communicator/Communicator.cpp
+    SOURCES router.h router.cpp
+    SOURCES authmodel.h authmodel.cpp
+    SOURCES authcontroller.h authcontroller.cpp
+    SOURCES user.h user.cpp
+    SOURCES sessionmodel.h sessionmodel.cpp
+    SOURCES Protocol/protocol.h Protocol/protocol.cpp
 )
 
 # Add the SharedProtocol subdirectory
@@ -37,21 +35,20 @@ qt_add_qml_module(appclient
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
-set_target_properties(appclient PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appclient
+set_target_properties(appClient PROPERTIES
+#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appClient
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
 
-target_link_libraries(appclient
-    PRIVATE Qt6::Quick
+target_link_libraries(appClient
+    PRIVATE Qt6::Quick Qt6::QuickControls2
 )
 
 include(GNUInstallDirs)
-install(TARGETS appclient
+install(TARGETS appClient
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

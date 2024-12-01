@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>certs/server.crt</file>
+        <file>config/config.json</file>
+    </qresource>
+</RCC>

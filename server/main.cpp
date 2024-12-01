@@ -10,12 +10,12 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
 
-    databaseHandler dbHandler = databaseHandler();
+    databaseHandler *dbHandler = new databaseHandler();
 
-    QSharedPointer<DatabaseResponse> dbr = dbHandler.AddUser("Mehmwewett","hwhwhdwhdwdw","Hi");
+    QSharedPointer<DatabaseResponse> dbr = dbHandler->AddUser("myUser","myPassword","Hi");
     qDebug() << dbr->message();
 
-    dbr = dbHandler.LoginUser("Mehmwewett","hwhwhdwhdwdw");
+    dbr = dbHandler->LoginUser("Mehmwewett","hwhwhdwhdwdw");
 
 
 
@@ -26,11 +26,9 @@ int main(int argc, char *argv[])
 
    // qDebug() << dbr->message();
 
-    dbr = dbHandler.getIDByToken(token+"gg");
+    dbr = dbHandler->getIDByToken(token+"gg");
 
     qDebug() << dbr->message();
-
-    QSqlDatabase db = QSqlDatabase::database();
 
     Server server;
     server.start();
