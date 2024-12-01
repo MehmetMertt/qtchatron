@@ -22,6 +22,7 @@ public:
     QSharedPointer<DatabaseResponse> getAllDirectMessagesByUserID(const QString& id);
     QSharedPointer<DatabaseResponse> getIDByToken(const QString& token);
     QSharedPointer<DatabaseResponse> checkIfUserExists(const QString& username);
+    QSharedPointer<DatabaseResponse> getDirectMessagesBetweenUserByID(const QString& userid1,const QString& userid2);
 
 signals:
 };

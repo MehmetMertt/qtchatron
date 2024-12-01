@@ -92,6 +92,67 @@ QSharedPointer<DatabaseResponse> databaseHandler::checkIfUserExists(const QStrin
     return dbr;
 }
 
+/**
+ * \brief Gets all DIrect Messages between two UserID's
+ *
+ * This function takes two userids and returns a QShardPointer<DatabaseResponse> Object
+ *
+ * \param id ID of the first user
+ * \param id ID of the second user
+ * \return returns QSharedPointer<DatabaseResponse> Object with messages or null
+ */
+QSharedPointer<DatabaseResponse> databaseHandler::getDirectMessagesBetweenUserByID(const QString& userid1,const QString& userid2) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT sender_id,receiver_id,content,"timestamp",is_read
+        FROM DirectMessages dm
+        WHERE (sender_id = :userid1 AND receiver_id = :userid2)
+           OR (sender_id = :userid2 AND receiver_id = :userid1)
+        ORDER BY timestamp ASC;
+    )");
+    query.bindValue(":userid1", userid1);
+    query.bindValue(":userid2", userid2);
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+     //   messageObject["chat_id"] = query.value("id").toString();
+        messageObject["sender_id"] = query.value("sender_id").toString();
+        messageObject["receiver_id"] = query.value("receiver_id").toString();
+        messageObject["content"] = query.value("content").toString();
+        messageObject["timestamp"] = query.value("timestamp").toString();
+        messageObject["isRead"] = query.value("is_read").toString();
+
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
 
 
 /**
@@ -295,7 +356,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(c
 
     QSqlQuery query(db);
     query.prepare(R"(
-        SELECT DISTINCT u.username, dm.receiver_id
+        SELECT DISTINCT dm.id, u.username, dm.receiver_id
         FROM DirectMessages dm
         JOIN Users u ON dm.receiver_id = u.id
         WHERE dm.sender_id = :user_id
@@ -311,7 +372,8 @@ QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(c
 
     while (query.next()) {
         QJsonObject messageObject;
-        messageObject["id"] = query.value("receiver_id").toString();
+     //   messageObject["chat_id"] = query.value("id").toString();
+        messageObject["receiver"] = query.value("receiver_id").toString();
         messageObject["username"] = query.value("username").toString();
         jsonArray.append(messageObject);
     }
