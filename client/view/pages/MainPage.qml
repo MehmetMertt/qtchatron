@@ -71,8 +71,10 @@ Page {
             pageToShow = channelPage;
         } else if(c_page_index === 2){
             pageToShow = chatViewPage;
-        } else {
+        } else if(c_page_index === 3){
             pageToShow = settingsPage;
+        }else {
+            pageToShow = channelPage;
         }
 
         // Check if the page is already on the stack

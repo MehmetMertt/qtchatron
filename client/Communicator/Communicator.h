@@ -38,6 +38,9 @@ signals:
     void getDmListResponse(const bool success, const QString message);
     void getChatHistoryResponse(const bool success, const QString message, const int receiverId);
     void createChannelResponse(const bool success, const QString message, const QString invite);
+    void joinChannelResponse(const bool success, const QString message);
+    void channelDataResponse(const bool success, const QString message);
+    void threadCreationRespond(const bool success, const QString message, const int threadid);
 
 private slots:
     void onEncrypted();

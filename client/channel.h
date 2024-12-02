@@ -5,6 +5,8 @@
 #include <QtQml>
 
 #include "chatmessageitem.h"
+#include "user.h"
+#include "thread.h"
 
 class Channel : public QObject
 {
@@ -15,6 +17,8 @@ class Channel : public QObject
     Q_PROPERTY(int channelID READ channelID WRITE setChannelID NOTIFY channelIDChanged FINAL)
     Q_PROPERTY(QList<QObject *> messageList MEMBER _messageList NOTIFY messageListChanged FINAL)
     Q_PROPERTY(QString invite READ invite WRITE setInvite NOTIFY inviteChanged FINAL)
+    Q_PROPERTY(bool admin READ getAdmin WRITE setAdmin NOTIFY adminChanged FINAL)
+    Q_PROPERTY(QList<QObject *> threadList MEMBER _threadList NOTIFY threadListChanged FINAL)
 
 public:
     explicit Channel(QObject *parent = nullptr);
@@ -22,8 +26,9 @@ public:
 
     QList<QObject *> memberList() const;
     void setMemberList(const QList<QObject *> &newMemberList);
+    void addMember(User* newMember);
 
-
+    void addThread(Thread* newThread);
 
     QString channelName() const;
     void setChannelName(const QString &newChannelName);
@@ -40,12 +45,21 @@ public:
 
     void addMessage(ChatMessageItem *newMessage);
 
+    bool getAdmin() const;
+    void setAdmin(bool newAdmin);
+
+    QList<QObject *> threadList() const;
+    void setThreadList(const QList<QObject *> &newThreadList);
+
 private:
     QList<QObject *> _memberList;
     QList<QObject *> _messageList;
+    QList<QObject *> _threadList;
     QString _channelName;
     int _channelID;
     QString _invite;
+    bool admin;
+
 
 
 signals:
@@ -54,6 +68,8 @@ signals:
     void channelIDChanged();
     void messageListChanged();
     void inviteChanged();
+    void adminChanged();
+    void threadListChanged();
 };
 
 #endif // CHANNEL_H

@@ -18,6 +18,11 @@ Rectangle {
     required property var index
     property Channel channel: ClientData.SessionUser.channelList[index]
 
+    Component.onCompleted: {
+        console.log(channel.channelID)
+        console.log(ClientData.SessionUser.channelList.length)
+    }
+
     Connections {
         target: MainPageRouter
         function onTopbarTitleChanged() {
@@ -50,6 +55,7 @@ Rectangle {
         anchors.fill: parent
         onClicked: {
             ChannelModel.setChannel(channelIcon.channel)
+            MainPageRouter.setSelectedPageID(channelIcon.index)
             MainPageRouter.setCurrentItem(MainPageRouter.CHANNEL, channelIcon.channel.channelName)
             console.log("Channel clicked: " + channelIcon.channel.channelName)
         }

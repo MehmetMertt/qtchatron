@@ -5,6 +5,7 @@
 #include "Communicator/Communicator.h"
 #include "Protocol/protocol.h"
 #include "chatmessageitem.h"
+#include "thread.h"
 
 SessionUser* SessionUser::instance = nullptr;
 std::mutex SessionUser::mtx;
@@ -75,6 +76,51 @@ void SessionUser::processChannelCreation(QString channelname, QString type, bool
 
 }
 
+void SessionUser::processChannelJoin(QString channelname, QString invite)
+{
+    auto *communicator = Communicator::getInstance();
+    disconnect(communicator, &Communicator::joinChannelResponse, this, &SessionUser::handleChannelJoinResponse);
+    connect(communicator, &Communicator::joinChannelResponse, this, &SessionUser::handleChannelJoinResponse);
+
+    this->instance->_channelCreationName = channelname;
+
+    QJsonObject jsonObject;
+    jsonObject["channelName"] = channelname;
+    jsonObject["invite"] = invite;
+    jsonObject["token"] = this->instance->token();
+
+    QJsonDocument jsonDoc(jsonObject);
+    communicator->sendData(Protocol(COMMAND_TRANSFER, "join_channel", QString(jsonDoc.toJson(QJsonDocument::Compact)).toStdString()));
+
+}
+
+void SessionUser::processThreadCreation(QString threadname, int channelId)
+{
+    auto *communicator = Communicator::getInstance();
+    disconnect(communicator, &Communicator::threadCreationRespond, this, &SessionUser::handleThreadCreationRespond);
+    connect(communicator, &Communicator::threadCreationRespond, this, &SessionUser::handleThreadCreationRespond);
+
+    this->instance->_channelCreationName = threadname;
+
+
+    Channel* currentChannel = qobject_cast<Channel*>(this->instance->_channelList[channelId]);
+    int realChannelId = -1;
+    if(currentChannel) {
+        realChannelId = currentChannel->channelID();
+    }
+
+    qDebug() << "create thread " << threadname << ": " << realChannelId;
+    QJsonObject jsonObject;
+    jsonObject["threadname"] = threadname;
+    jsonObject["channelId"] = realChannelId;
+    jsonObject["token"] = this->instance->token();
+
+
+    QJsonDocument jsonDoc(jsonObject);
+    communicator->sendData(Protocol(COMMAND_TRANSFER, "create_thread", QString(jsonDoc.toJson(QJsonDocument::Compact)).toStdString()));
+
+}
+
 void SessionUser::handleChatCreationResponse(const bool success, const QString message, const int receiverUserId)
 {
     qDebug() << "chat creation respons: " << success << ": " << message << ": " << receiverUserId;
@@ -102,8 +148,8 @@ void SessionUser::handleReceivedMessageFromOtherUser(const int senderId, const Q
 
 void SessionUser::handleReceivedMessageFromOtherUserInChannel(const int senderId, const QString message, const int channelId)
 {
-    qDebug() << "message received from: " << senderId << " in " << channelId;
-    auto sender = this->getUserFromDmListById(senderId);
+    qDebug() << "message received from: " << senderId << " in " << channelId << ": " << message;
+    auto sender = this->getUserFromChannelsById(senderId);
     auto channel = this->getChannelFromListById(channelId);
     auto timee = std::time(nullptr);
     auto tm = *std::localtime(&timee);
@@ -156,8 +202,11 @@ void SessionUser::loadData()
     auto *communicator = Communicator::getInstance();
 
     connect(communicator, &Communicator::getDmListResponse, this, &SessionUser::handleReceivedDmList);
+    connect(communicator, &Communicator::channelDataResponse, this, &SessionUser::handleReceivedChannelsData);
+
 
     communicator->sendData(Protocol(COMMAND_TRANSFER, "get_dmlist_by_userid", this->instance->token().toStdString()));
+    communicator->sendData(Protocol(COMMAND_TRANSFER, "get_channels_data", this->instance->token().toStdString()));
 
 }
 
@@ -224,6 +273,116 @@ void SessionUser::handleChannelCreationResponse(const bool success, const QStrin
     emit this->instance->channelPopupSuccess(_channelCreationName, this->instance->_channelList.indexOf(newChannel));
     emit this->instance->channelListChanged();
 }
+
+void SessionUser::handleChannelJoinResponse(const bool success, const QString &message)
+{
+    if(!success) {
+        emit this->instance->channelPopupFailure(message);
+        return;
+    }
+
+    qDebug() << "channel join response " << success << ": " << message;;
+    auto newChannel = new Channel(_channelCreationName);
+    newChannel->setChannelID(message.toInt());
+
+    newChannel->addMember(this->instance->user());
+
+    this->instance->_channelList.append(newChannel);
+    emit this->instance->channelPopupSuccess(_channelCreationName, this->instance->_channelList.indexOf(newChannel));
+    emit this->instance->channelListChanged();
+}
+
+void SessionUser::handleReceivedChannelsData(const bool success, const QString message)
+{
+    qDebug() << "Channel data received: " << success << ": " << message;
+
+    if (!success) {
+        qDebug() << "Failed to retrieve channel data.";
+        return;
+    }
+
+    // Parse the JSON string
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8());
+    if (jsonDoc.isNull() || !jsonDoc.isArray()) {
+        qDebug() << "Invalid JSON format.";
+        return;
+    }
+
+    QJsonArray channelArray = jsonDoc.array();
+
+    qDebug() << "go through list";
+    for (const QJsonValue& channelValue : channelArray) {
+        if (!channelValue.isObject()) continue;
+
+        QJsonObject channelObject = channelValue.toObject();
+
+        // Extract channel details
+        QString channelName = channelObject["channelName"].toString();
+        QString channelId = channelObject["channel_id"].toString();
+        QString channelType = channelObject["channel_type"].toString();
+        QString channelAdmin = channelObject["channel_admin"].toString();
+        QString channelInvite = channelObject["channel_invite"].toString();
+
+        // Extract and parse channel members
+        QString membersRaw = channelObject["channel_members"].toString();
+        QStringList memberList = membersRaw.split(",", Qt::SkipEmptyParts);
+
+        auto channel = new Channel(channelName, this);
+        channel->setChannelID(channelId.toInt());
+        channel->setInvite(channelInvite);
+
+        for (const QString& member : memberList) {
+            QStringList parts = member.split(":");
+            if (parts.size() == 2) {
+                QString username = parts[0];
+                int userId = parts[1].toInt();
+
+                qDebug() << "check existing user";
+                // Check if user exists in dmList or other channels
+                User* existingUser = getUserFromDmListById(userId);
+                if (!existingUser) {
+                    existingUser = getUserFromChannelsById(userId);
+                }
+
+                if (existingUser) {
+                    channel->addMember(existingUser);
+                } else {
+                    channel->addMember(new User(username, userId, this));
+                }
+            }
+        }
+
+        qDebug() << "add to list";
+        this->instance->_channelList.append(channel);
+
+    }
+    emit channelListChanged();
+}
+
+void SessionUser::handleThreadCreationRespond(const bool success, const QString message, const int channelId)
+{
+    if (!success) {
+        emit this->instance->channelPopupFailure(message);
+        return;
+    }
+
+    qDebug() << "thread create response " << success << ": " << message << ". " << _channelCreationName << ": <" << channelId;
+
+    auto* newThread = new Thread(_channelCreationName, message.toInt());
+
+    qDebug() << "emit signals";
+    Channel* channel = this->instance->getChannelFromListById(channelId);
+    int newThreadIndex = channel->threadList().length();
+    channel->addThread(newThread);
+
+    qDebug() << channel->threadList();
+    qDebug() << this->instance->_channelList;
+    qDebug() << "emit signals";
+
+    emit this->instance->threadPopupSuccess(_channelCreationName, this->instance->_channelList.indexOf(channel), newThreadIndex);
+    emit this->instance->channelListChanged();
+}
+
 
 void SessionUser::handleNextChatHistory()
 {
@@ -331,6 +490,23 @@ Channel *SessionUser::getChannelFromListById(int channelId)
         }
     }
     return nullptr;
+}
+
+User *SessionUser::getUserFromChannelsById(int userId)
+{
+    for (QObject* obj : _channelList) {
+        Channel* channel = qobject_cast<Channel*>(obj); // Assuming Channel is your class for channels
+        if (channel) {
+            QList<QObject*> members = channel->memberList();
+            for (QObject* memberObj : members) {
+                User* user = qobject_cast<User*>(memberObj);
+                if (user && user->userId() == userId) {
+                    return user; // User found
+                }
+            }
+        }
+    }
+    return nullptr; // User not found
 }
 
 

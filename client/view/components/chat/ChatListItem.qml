@@ -32,6 +32,7 @@ Item {
 
         // User icon
         UserIcon {
+            initial: itemRoot.sender[0]
         }
 
         Column {

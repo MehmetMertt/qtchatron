@@ -109,11 +109,11 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
                     }
                 }
                 std::string responsePayload;
-                commandHandler.dbHandler()->sendMessageToUserID(QString::number(senderId), QString::number(receiverId), message);
+                auto dbResponse = commandHandler.dbHandler()->sendMessageToUserID(QString::number(senderId), QString::number(receiverId), message);
 
                 QJsonObject responseObject;
-                responseObject["success"] = true; //dbResponse->success();
-                responseObject["message"] = "message saved"; //dbResponse->message();
+                responseObject["success"] = dbResponse->success();
+                responseObject["message"] = dbResponse->message();
 
                 QJsonDocument responseJsonDoc(responseObject);
 
@@ -129,7 +129,7 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
                 // Send the response back to the client
                 sender->sendData(responseProtocol);
             }
-        } else if(command == "send_channel") {
+        } else if(command == "send_to_channel") {
 
             // Konvertiere den QString in ein QJsonDocument
             QJsonDocument jsonDoc = QJsonDocument::fromJson(params.toUtf8());
@@ -151,6 +151,7 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
                     return;
                 }
 
+                qDebug() << "send to: " << dbResponse->message();
                 QJsonArray jsonArray = doc.array();
 
                 // Nachricht erstellen
@@ -177,7 +178,10 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
                     }
 
                     int userId = userIdStr.toInt(); // Konvertiere zu int, falls erforderlich
-
+                    if(userId == senderId) {
+                        continue;
+                    }
+                    qDebug() << "try to send to: " << userId;
                     // ServerWorker suchen und Nachricht senden
                     for (ServerWorker* worker : _clients) {
                         if (worker && worker->userID() == userId) { // Annahme: getUserId() gibt die User-ID zurück

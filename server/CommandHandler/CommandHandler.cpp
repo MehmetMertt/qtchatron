@@ -53,6 +53,49 @@ std::string CommandHandler::routeCommand(const Command& command)
 
             return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
         }
+    } else if (cmd == "create_thread") {
+        QString jsonQString = QString::fromStdString(params);
+
+        // Konvertiere den QString in ein QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+        // Überprüfen, ob das Dokument gültiges JSON enthält
+        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+            QJsonObject jsonObject = jsonDoc.object();
+            qDebug() << jsonQString;
+            // Zugriff auf die Werte
+            QString token = jsonObject["token"].toString();
+            QString threadname = jsonObject["threadname"].toString();
+            int channelId = jsonObject["channelId"].toInt();
+            QString userId = _dbHandler->getIDByToken(token)->message();
+
+            qDebug() << channelId;
+            auto dbResponse = _dbHandler->createThread(QString::number(channelId), threadname, userId);
+
+            QJsonObject responseObject;
+            responseObject["success"] = dbResponse->success();
+            responseObject["message"] = dbResponse->message();
+            responseObject["channelID"] = dbResponse->extra();
+
+            qDebug() << dbResponse->message();
+
+            QJsonDocument responseJsonDoc(responseObject);
+
+            return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+        }
+    } else if (cmd == "get_channels_data") {
+        QString token = QString::fromStdString(params);
+        QString userId = _dbHandler->getIDByToken(token)->message();
+
+        auto dbResponse = _dbHandler->getChannelsFromUser(userId);
+
+        QJsonObject responseObject;
+        responseObject["success"] = dbResponse->success();
+        responseObject["message"] = dbResponse->message();
+
+        QJsonDocument responseJsonDoc(responseObject);
+
+        return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
     } else if (cmd == "create_channel") {
         QString jsonQString = QString::fromStdString(params);
 
@@ -76,6 +119,35 @@ std::string CommandHandler::routeCommand(const Command& command)
             responseObject["success"] = dbResponse->success();
             responseObject["message"] = dbResponse->message();
             responseObject["invite"] = dbResponse->extra();
+
+            qDebug() << dbResponse->message();
+
+            QJsonDocument responseJsonDoc(responseObject);
+
+            return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+        }
+    } else if (cmd == "join_channel") {
+        QString jsonQString = QString::fromStdString(params);
+
+        // Konvertiere den QString in ein QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+        // Überprüfen, ob das Dokument gültiges JSON enthält
+        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+            QJsonObject jsonObject = jsonDoc.object();
+
+            // Zugriff auf die Werte
+            QString token = jsonObject["token"].toString();
+            QString channelName = jsonObject["channelName"].toString();
+            QString invite = jsonObject["invite"].toString();
+            QString userId = _dbHandler->getIDByToken(token)->message();
+
+            auto dbResponse = _dbHandler->joinChannel(channelName, userId, invite);
+
+            QJsonObject responseObject;
+            responseObject["success"] = dbResponse->success();
+            responseObject["message"] = dbResponse->message();
+            responseObject["channelName"] = dbResponse->extra();
 
             qDebug() << dbResponse->message();
 
@@ -153,7 +225,13 @@ QString CommandHandler::getCommandResponseName(const Command &command)
         return "get_chat_history_by_userid_response";
     } else if(command.command() == "create_channel") {
         return "create_channel_response";
-    }else {
+    } else if(command.command() == "join_channel") {
+        return "join_channel_response";
+    } else if(command.command() == "get_channels_data") {
+        return "get_channels_data_response";
+    } else if(command.command() == "create_thread") {
+        return "create_thread_response";
+    } else {
         return "unknown response";
     }
 }

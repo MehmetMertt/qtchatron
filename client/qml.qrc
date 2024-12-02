@@ -21,5 +21,6 @@
         <file>view/components/mainPage/AddChannelPopup.qml</file>
         <file>view/pages/SignupPage.qml</file>
         <file>view/components/mainPage/Settings.qml</file>
+        <file>view/components/channels/ThreadItem.qml</file>
     </qresource>
 </RCC>

@@ -39,6 +39,9 @@ qt_add_qml_module(appClient
     SOURCES channelmodel.h channelmodel.cpp
     SOURCES channel.h channel.cpp
     SOURCES channelcontroller.h channelcontroller.cpp
+    SOURCES threadmodel.h threadmodel.cpp
+    SOURCES thread.h thread.cpp
+    SOURCES threadcontroller.h threadcontroller.cpp
 )
 
 # Add the SharedProtocol subdirectory

@@ -225,6 +225,7 @@ Rectangle {
                     if (tabBar.currentIndex === 0) {
                         var secretKey = secretKeyField.text;      // Get the secret key (if any)
                         console.log("Join Channel with details entered")
+                        ClientData.SessionUser.processChannelJoin(channelName, secretKey)
                     } else {
                         var isPrivate = visibilityButtonGroup.checkedButton === privateButton;
                         var isTextChannel = channelTypeButtonGroup.checkedButton === textTypeButton;

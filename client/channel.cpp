@@ -5,20 +5,12 @@
 Channel::Channel(QObject *parent)
     : QObject{parent}
 {
-    _memberList.append(new User("Mehmer"));
-    _memberList.append(new User("Michi"));
-    _memberList.append(new User("Martin"));
-    _memberList.append(new User("User1"));
 }
 
 Channel::Channel(QString name, QObject *parent)
     : QObject{parent},
     _channelName(name)
 {
-    _memberList.append(new User("Mehmer"));
-    _memberList.append(new User("Michi"));
-    _memberList.append(new User("Martin"));
-    _memberList.append(new User("User1"));
 }
 
 QList<QObject *> Channel::memberList() const
@@ -32,6 +24,18 @@ void Channel::setMemberList(const QList<QObject *> &newMemberList)
         return;
     _memberList = newMemberList;
     emit memberListChanged();
+}
+
+void Channel::addMember(User *newMember)
+{
+    _memberList.append(newMember);
+    emit memberListChanged();
+}
+
+void Channel::addThread(Thread *newThread)
+{
+    _threadList.append(newThread);
+    emit threadListChanged();
 }
 
 QString Channel::channelName() const
@@ -90,4 +94,30 @@ void Channel::addMessage(ChatMessageItem *newMessage)
 {
     _messageList.append(newMessage);
     emit messageListChanged();
+}
+
+bool Channel::getAdmin() const
+{
+    return admin;
+}
+
+void Channel::setAdmin(bool newAdmin)
+{
+    if (admin == newAdmin)
+        return;
+    admin = newAdmin;
+    emit adminChanged();
+}
+
+QList<QObject *> Channel::threadList() const
+{
+    return _threadList;
+}
+
+void Channel::setThreadList(const QList<QObject *> &newThreadList)
+{
+    if (_threadList == newThreadList)
+        return;
+    _threadList = newThreadList;
+    emit threadListChanged();
 }

@@ -31,6 +31,8 @@ public:
 
     Q_INVOKABLE void processChatCreation(QString username);
     Q_INVOKABLE void processChannelCreation(QString channelname, QString type, bool isPublic);
+    Q_INVOKABLE void processChannelJoin(QString channelname, QString invite = nullptr);
+    Q_INVOKABLE void processThreadCreation(QString threadname, int channelId);
 
     void handleChatCreationResponse(const bool success, const QString message, const int receiverUserId);
 
@@ -39,6 +41,7 @@ public:
     Q_INVOKABLE User* getUserFromDmListByUsername(QString username);
     User* getUserFromDmListById(int userId);
     Channel* getChannelFromListById(int channelId);
+    User* getUserFromChannelsById(int userId);
     QList<QObject *> dmList() const;
     void setDmList(const QList<QObject *> &newDmList);
 
@@ -69,6 +72,8 @@ private:
     QQueue<std::tuple<bool, QString, int>> _chatHistoryQueue; // Queue for handling messages
     bool _isProcessingChatHistory = false; // Flag to prevent concurrent processing
 
+
+
     void handleNextChatHistory();
 
     void handleReceivedMessageFromOtherUser(const int senderId, const QString message);
@@ -77,6 +82,9 @@ private:
     void loadChatHistoryForAllUsers();
     void handleReceivedChatHistory(const bool success, const QString& message, const int receiverId);
     void handleChannelCreationResponse(const bool success, const QString& message, const QString& invite);
+    void handleChannelJoinResponse(const bool success, const QString& message);
+    void handleReceivedChannelsData(const bool success, const QString message);
+    void handleThreadCreationRespond(const bool success, const QString message, const int threadid);
 
 signals:
     void dmListChanged();
@@ -86,6 +94,8 @@ signals:
     void chatCreationFailure(QString message);
     void channelPopupSuccess(QString channelName, int channelID);
     void channelPopupFailure(QString message);
+    void threadPopupSuccess(QString threadName, int channelID, int threadID);
+    void threadPopupFailure(QString message);
 };
 
 
