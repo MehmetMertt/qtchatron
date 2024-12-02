@@ -53,6 +53,36 @@ std::string CommandHandler::routeCommand(const Command& command)
 
             return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
         }
+    } else if (cmd == "create_channel") {
+        QString jsonQString = QString::fromStdString(params);
+
+        // Konvertiere den QString in ein QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+        // Überprüfen, ob das Dokument gültiges JSON enthält
+        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+            QJsonObject jsonObject = jsonDoc.object();
+
+            // Zugriff auf die Werte
+            QString token = jsonObject["token"].toString();
+            QString channelName = jsonObject["channelName"].toString();
+            bool isPublic = jsonObject["isPublic"].toBool();
+            QString type = jsonObject["type"].toString();
+            QString userId = _dbHandler->getIDByToken(token)->message();
+
+            auto dbResponse = _dbHandler->createChannel(channelName, type, isPublic, userId);
+
+            QJsonObject responseObject;
+            responseObject["success"] = dbResponse->success();
+            responseObject["message"] = dbResponse->message();
+            responseObject["invite"] = dbResponse->extra();
+
+            qDebug() << dbResponse->message();
+
+            QJsonDocument responseJsonDoc(responseObject);
+
+            return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+        }
     }
     else if (cmd == "login_request" || cmd == "signup_request") {
         // Respond with request for username
@@ -121,6 +151,8 @@ QString CommandHandler::getCommandResponseName(const Command &command)
         return "get_dmlist_by_userid_response";
     } else if(command.command() == "get_chat_history_by_userid") {
         return "get_chat_history_by_userid_response";
+    } else if(command.command() == "create_channel") {
+        return "create_channel_response";
     }else {
         return "unknown response";
     }

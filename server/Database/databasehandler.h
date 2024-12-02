@@ -38,6 +38,7 @@ public:
     QSharedPointer<DatabaseResponse> createChannel(const QString& name,const QString& type,bool isPublic,const QString& user_id);
     QSharedPointer<DatabaseResponse> getChannelsFromUser(const QString& userID);
     QSharedPointer<DatabaseResponse> sendMessageToChannel(const QString& channelID,const QString& userID,const QString& message);
+    QSharedPointer<DatabaseResponse> getChannelMembersFromID(const QString& channelID);
 
     /* Thread-Section */
     QSharedPointer<DatabaseResponse> createThread(const QString& channelID,const QString& title,const QString& userID);

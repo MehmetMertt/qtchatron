@@ -14,7 +14,7 @@ class ChatModel : public QObject
     QML_ELEMENT
     QML_SINGLETON
     Q_PROPERTY(QString inputMessage READ inputMessage WRITE setInputMessage NOTIFY inputMessageChanged)
-
+    Q_PROPERTY(User *receivingUser READ receivingUser WRITE setReceivingUser NOTIFY receivingUserChanged FINAL)
 
 public:
     explicit ChatModel(QObject *parent = nullptr);
@@ -40,7 +40,7 @@ private:
 
     ChatController *_chatController;
 
-    Q_PROPERTY(User *receivingUser READ receivingUser WRITE setReceivingUser NOTIFY receivingUserChanged FINAL)
+
 };
 
 #endif // CHATMODEL_H

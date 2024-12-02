@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Layouts
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 Rectangle {
     id: userCard
@@ -11,7 +12,7 @@ Rectangle {
     width: parent.width
 
     required property var index
-    property User user: ChannelModel.memberList[index]
+    property User user: ClientData.SessionUser.channelList[MainPageRouter.selectedPageID].memberList[index]
 
 
     Rectangle {

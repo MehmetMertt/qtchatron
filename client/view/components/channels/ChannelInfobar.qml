@@ -5,13 +5,14 @@ import QtQuick.Controls.Material
 import "../user"
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 Rectangle {
     id: channelInfobar
     width: 225
     color: "#232226" //bit darker dark
 
-    property list<User> memberList: ChannelModel.memberList
+    property list<User> memberList: ClientData.SessionUser.channelList[MainPageRouter.selectedPageID].memberList
 
     //Border
     Rectangle {

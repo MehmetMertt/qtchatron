@@ -36,6 +36,9 @@ qt_add_qml_module(appClient
     SOURCES sessionmodel.h sessionmodel.cpp
     SOURCES Protocol/protocol.h Protocol/protocol.cpp
     SOURCES chatcontroller.h chatcontroller.cpp
+    SOURCES channelmodel.h channelmodel.cpp
+    SOURCES channel.h channel.cpp
+    SOURCES channelcontroller.h channelcontroller.cpp
 )
 
 # Add the SharedProtocol subdirectory

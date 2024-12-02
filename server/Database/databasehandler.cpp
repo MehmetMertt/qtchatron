@@ -372,8 +372,8 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
 
     query.prepare(R"(
         INSERT INTO Channels
-        (name, type, access_type,invite_link,admin_id)
-        VALUES(:name, :type, :access_type,:link,:admin_id);
+        (name, type, access_type, invite_link, admin_id)
+        VALUES(:name, :type, :access_type, :invite_link, :admin_id);
     )");
 
 
@@ -384,10 +384,10 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
     query.bindValue(":access_type", access_type);
     if(!isPublic){
         invite = generateRandomString(6);
-        query.bindValue(":link",invite);
+        query.bindValue(":invite_link",invite);
 
     }else {
-        query.bindValue(":link", QVariant(QVariant::String)); //deprecated, but other options didint work
+        query.bindValue(":invite_link", QVariant());
     }
 
 
@@ -397,10 +397,55 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
     }
 
     if(!isPublic){
-        dbr->setMessage("invite:"+invite);
-    } else {
-        dbr->setMessage("channel created");
+        dbr->setExtra(invite);
     }
+    dbr->setMessage(query.lastInsertId().toString());
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
+QSharedPointer<DatabaseResponse> databaseHandler::getChannelMembersFromID(const QString& channelID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT user_id
+        FROM ChannelUser where channel_id = :channel_id;
+    )");
+    query.bindValue(":channel_id", channelID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        messageObject["user_id"] = query.value("user_id").toString();
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
     dbr->setSuccess(true);
     return dbr;
 }

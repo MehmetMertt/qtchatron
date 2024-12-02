@@ -123,7 +123,7 @@ void Communicator::handleProtocolMessage(const Protocol& p)
     switch (p.getMsgType()) {
     case MessageType::MESSAGE_TRANSFER:
         qDebug() << "wtf das ist scheise: " << p.getName();
-        if(p.getName() == "send_dm_response") {
+        if(p.getName() == "send_dm_response" || p.getName() == "send_channel_response") {
             QJsonObject jsonObject = parseJsonPayload(p.getPayload());
 
             if (!jsonObject.isEmpty()) {
@@ -144,6 +144,21 @@ void Communicator::handleProtocolMessage(const Protocol& p)
 
                 qDebug() << "notify session user";
                 emit receivedMessageFromOtherUser(senderId, message);
+            } else {
+                qDebug() << "json parse Error";
+            }
+        } else if(p.getName() == "send_channel") {
+            qDebug() << "got channel message";
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                int senderId = jsonObject["senderId"].toInt(-1);
+                int channelId = jsonObject["channelId"].toInt(-1);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                qDebug() << "notify session user";
+                emit receivedMessageFromOtherUserInChannel(senderId, message, channelId);
             } else {
                 qDebug() << "json parse Error";
             }
@@ -204,7 +219,7 @@ void Communicator::handleProtocolMessage(const Protocol& p)
                 qDebug() << message;
                 emit getChatHistoryResponse(success, message, receiverId);
             }
-        } else if(p.getName() == "get_chat_history_by_userid_response") {
+        } else if(p.getName() == "create_channel_response") {
 
             QJsonObject jsonObject = parseJsonPayload(p.getPayload());
 
@@ -213,10 +228,10 @@ void Communicator::handleProtocolMessage(const Protocol& p)
                 // Zugriff auf die Werte
                 bool success = jsonObject["success"].toBool(false);
                 QString message = jsonObject["message"].toString("An unexpected error occured!");
-                int receiverId = jsonObject["receiverId"].toString().toInt();
+                QString invite = jsonObject["invite"].toString();
 
                 qDebug() << message;
-                emit getChatHistoryResponse(success, message, receiverId);
+                emit createChannelResponse(success, message, invite);
             }
         }
 

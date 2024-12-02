@@ -1,63 +1,52 @@
 #include "channelmodel.h"
 
-#include "user.h"
+#include "sessionuser.h"
 
 ChannelModel::ChannelModel(QObject *parent)
-    : QObject{parent}
-{
-    _memberList.append(new User("Mehmer"));
-    _memberList.append(new User("Michi"));
-    _memberList.append(new User("Martin"));
-    _memberList.append(new User("User1"));
-}
-
-ChannelModel::ChannelModel(QString name, QObject *parent)
     : QObject{parent},
-    _channelName(name)
+    _channelController(new ChannelController())
+{}
+
+void ChannelModel::sendMessage()
 {
-    _memberList.append(new User("Mehmer"));
-    _memberList.append(new User("Michi"));
-    _memberList.append(new User("Martin"));
-    _memberList.append(new User("User1"));
+    if (_inputMessage.isEmpty()) {
+        return;  // Safety check
+    }
+    _channelController->processSendingMessage(_inputMessage, this->channel()->channelID());
+    qDebug() << _inputMessage;
+    // an den MessageController schicken
+    // von MessageController an den Server schicken
+    auto timee = std::time(nullptr);
+    auto tm = *std::localtime(&timee);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
+    QString timeString = QString::fromStdString(oss.str());
+    _channel->addMessage(new ChatMessageItem(SessionUser::getInstance()->user()->username(), _inputMessage, timeString));
+    emit sendMessageSuccess();
 }
 
-QList<QObject *> ChannelModel::memberList() const
+Channel *ChannelModel::channel() const
 {
-    return _memberList;
+    return _channel;
 }
 
-void ChannelModel::setMemberList(const QList<QObject *> &newMemberList)
+void ChannelModel::setChannel(Channel *newChannel)
 {
-    if (_memberList == newMemberList)
+    if (_channel == newChannel)
         return;
-    _memberList = newMemberList;
-    emit memberListChanged();
+    _channel = newChannel;
+    emit channelChanged();
 }
 
-QString ChannelModel::channelName() const
+QString ChannelModel::inputMessage() const
 {
-    return _channelName;
+    return _inputMessage;
 }
 
-void ChannelModel::setChannelName(const QString &newChannelName)
+void ChannelModel::setInputMessage(const QString &newInputMessage)
 {
-    if (_channelName == newChannelName)
+    if (_inputMessage == newInputMessage)
         return;
-    _channelName = newChannelName;
-    emit channelNameChanged();
+    _inputMessage = newInputMessage;
+    emit inputMessageChanged();
 }
-
-int ChannelModel::channelID() const
-{
-    return _channelID;
-}
-
-void ChannelModel::setChannelID(int newChannelID)
-{
-    if (_channelID == newChannelID)
-        return;
-    _channelID = newChannelID;
-    emit channelIDChanged();
-}
-
-

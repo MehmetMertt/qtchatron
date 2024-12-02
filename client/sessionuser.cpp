@@ -1,6 +1,6 @@
 #include "sessionuser.h"
 
-#include "channelmodel.h"
+#include "channel.h"
 
 #include "Communicator/Communicator.h"
 #include "Protocol/protocol.h"
@@ -17,6 +17,7 @@ SessionUser::SessionUser(QObject *parent)
 {
     auto *communicator = Communicator::getInstance();
     connect(communicator, &Communicator::receivedMessageFromOtherUser, this, &SessionUser::handleReceivedMessageFromOtherUser);
+    connect(communicator, &Communicator::receivedMessageFromOtherUserInChannel, this, &SessionUser::handleReceivedMessageFromOtherUserInChannel);
 }
 
 QString SessionUser::token() const
@@ -52,6 +53,28 @@ void SessionUser::processChatCreation(QString username)
 
 }
 
+void SessionUser::processChannelCreation(QString channelname, QString type, bool isPublic)
+{
+    auto *communicator = Communicator::getInstance();
+    disconnect(communicator, &Communicator::createChannelResponse, this, &SessionUser::handleChannelCreationResponse);
+    connect(communicator, &Communicator::createChannelResponse, this, &SessionUser::handleChannelCreationResponse);
+
+    this->instance->_channelCreationName = channelname;
+
+    QJsonObject jsonObject;
+    jsonObject["channelName"] = channelname;
+    jsonObject["type"] = type;
+    jsonObject["isPublic"] = isPublic;
+    jsonObject["token"] = this->instance->token();
+
+    qDebug() << type;
+
+    QJsonDocument jsonDoc(jsonObject);
+
+    communicator->sendData(Protocol(COMMAND_TRANSFER, "create_channel", QString(jsonDoc.toJson(QJsonDocument::Compact)).toStdString()));
+
+}
+
 void SessionUser::handleChatCreationResponse(const bool success, const QString message, const int receiverUserId)
 {
     qDebug() << "chat creation respons: " << success << ": " << message << ": " << receiverUserId;
@@ -75,6 +98,19 @@ void SessionUser::handleReceivedMessageFromOtherUser(const int senderId, const Q
     oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
     QString timeString = QString::fromStdString(oss.str());
     sender->addMessage(new ChatMessageItem(sender->username(), message, timeString));
+}
+
+void SessionUser::handleReceivedMessageFromOtherUserInChannel(const int senderId, const QString message, const int channelId)
+{
+    qDebug() << "message received from: " << senderId << " in " << channelId;
+    auto sender = this->getUserFromDmListById(senderId);
+    auto channel = this->getChannelFromListById(channelId);
+    auto timee = std::time(nullptr);
+    auto tm = *std::localtime(&timee);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
+    QString timeString = QString::fromStdString(oss.str());
+    channel->addMessage(new ChatMessageItem(sender->username(), message, timeString));
 }
 
 void SessionUser::handleReceivedDmList(const bool success, const QString message)
@@ -167,6 +203,28 @@ void SessionUser::handleReceivedChatHistory(const bool success, const QString& m
     }
 }
 
+void SessionUser::handleChannelCreationResponse(const bool success, const QString &message, const QString &invite)
+{
+    if(!success) {
+        emit this->instance->channelPopupFailure(message);
+        return;
+    }
+
+    qDebug() << "channel create response " << success << ": " << message << ": " << invite;
+    auto newChannel = new Channel(_channelCreationName);
+    newChannel->setChannelID(message.toInt());
+
+    if(!invite.isEmpty()) {
+        newChannel->setInvite(invite);
+    }
+
+    newChannel->setMemberList(QList<QObject *> {this->instance->user()});
+
+    this->instance->_channelList.append(newChannel);
+    emit this->instance->channelPopupSuccess(_channelCreationName, this->instance->_channelList.indexOf(newChannel));
+    emit this->instance->channelListChanged();
+}
+
 void SessionUser::handleNextChatHistory()
 {
     if (_chatHistoryQueue.isEmpty()) {
@@ -257,6 +315,19 @@ User *SessionUser::getUserFromDmListById(int userId)
         if (user && user->userId() == userId) { // Check if the cast succeeded and the username matches
             qDebug() << "found";
             return user;
+        }
+    }
+    return nullptr;
+}
+
+Channel *SessionUser::getChannelFromListById(int channelId)
+{
+    for (QObject* obj : _channelList) { // Iterate over the list
+        Channel* channel = qobject_cast<Channel*>(obj); // Cast QObject* to User*
+        qDebug() << channel->channelID();
+        if (channel && channel->channelID() == channelId) { // Check if the cast succeeded and the username matches
+            qDebug() << "found";
+            return channel;
         }
     }
     return nullptr;

@@ -12,8 +12,8 @@ Rectangle {
     id: root
     color: "#252328"
 
-    property list<ChatMessageItem> chatList: ChatModel.receivingUser.messageList
-    property var chatModel: ChatModel
+    property list<ChatMessageItem> chatList: MainPageRouter.currentItem == MainPageRouter.CHAT ? ChatModel.receivingUser.messageList : ChannelModel.channel.messageList
+    property var chatModel: MainPageRouter.currentItem == MainPageRouter.CHAT ? ChatModel : ChannelModel
 
     Connections{
         target: root.chatModel
