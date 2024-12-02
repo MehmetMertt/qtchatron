@@ -43,6 +43,26 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
             responsePayload = std::string("Error: ") + ex.what();
         }
 
+
+        if(command == "login_request") {
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(QString::fromStdString(responsePayload).toUtf8());
+
+            // Überprüfen, ob das Dokument gültiges JSON enthält
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+                QJsonObject jsonObject = jsonDoc.object();
+
+                bool success = jsonObject["success"].toBool();
+                QString message = jsonObject["message"].toString();
+
+                if(success) {
+                    int userID = commandHandler.dbHandler()->getIDByToken(message)->message().toInt();
+                    qDebug() << "set worker id: " << userID;
+                    sender->setUserID(userID);
+                }
+            }
+        }
+
+
         // Create a redsponse Protocol message
         Protocol responseProtocol(MessageType::COMMAND_TRANSFER, commandHandler.getCommandResponseName(cmd).toStdString(), responsePayload);
 
@@ -53,10 +73,151 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
 
     case MessageType::MESSAGE_TRANSFER: {
         // Handle general messages
-        QString senderName = QString::fromStdString(p.getName());
-        QString message = QString::fromStdString(p.getPayload());
+        QString command = QString::fromStdString(p.getName());
+        QString params = QString::fromStdString(p.getPayload());
 
-        emit logMessage(senderName + ": " + message);
+        if(command == "send_dm") {
+
+            // Konvertiere den QString in ein QJsonDocument
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(params.toUtf8());
+
+            // Überprüfen, ob das Dokument gültiges JSON enthält
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+                QJsonObject jsonObject = jsonDoc.object();
+
+                QString senderToken = jsonObject["senderToken"].toString();
+                int receiverId = jsonObject["receiverId"].toInt();
+                QString message = jsonObject["message"].toString();
+                int senderId = commandHandler.dbHandler()->getIDByToken(senderToken)->message().toInt();
+
+                QJsonObject sendToReceiverObj;
+                sendToReceiverObj["senderId"] = senderId;
+                sendToReceiverObj["message"] = message;
+
+                QJsonDocument sendToReceiverJsonDoc(sendToReceiverObj);
+
+                std::string sendToReceiverPayload = QString(sendToReceiverJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+
+
+                for (ServerWorker* worker : _clients) {
+                    qDebug() << "worker: " << worker->userID();
+                    if (worker && worker->userID() == receiverId) { // Annahme: getUserId() gibt die User-ID zurück
+                        Protocol sendToReceiverProtocol(MessageType::MESSAGE_TRANSFER, "send_dm", sendToReceiverPayload);
+                        worker->sendData(sendToReceiverProtocol); // sendData schickt die Nachricht
+                        qDebug() << "send to receiver: " << worker->userID();
+                        return; // Sobald der Worker gefunden wurde, beende die Suche
+                    }
+                }
+                std::string responsePayload;
+                auto dbResponse = commandHandler.dbHandler()->sendMessageToUserID(QString::number(senderId), QString::number(receiverId), message);
+
+                QJsonObject responseObject;
+                responseObject["success"] = dbResponse->success();
+                responseObject["message"] = dbResponse->message();
+
+                QJsonDocument responseJsonDoc(responseObject);
+
+                try {
+                    std::string responsePayload = QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+                } catch (const std::exception& ex) {
+                    responsePayload = std::string("Error: ") + ex.what();
+                }
+
+                // Create a redsponse Protocol message
+                Protocol responseProtocol(MessageType::MESSAGE_TRANSFER, "send_dm_response", responsePayload);
+
+                // Send the response back to the client
+                sender->sendData(responseProtocol);
+            }
+        } else if(command == "send_to_channel") {
+
+            // Konvertiere den QString in ein QJsonDocument
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(params.toUtf8());
+
+            // Überprüfen, ob das Dokument gültiges JSON enthält
+            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+                QJsonObject jsonObject = jsonDoc.object();
+
+                QString senderToken = jsonObject["senderToken"].toString();
+                int channelId = jsonObject["channelId"].toInt();
+                QString message = jsonObject["message"].toString();
+                int senderId = commandHandler.dbHandler()->getIDByToken(senderToken)->message().toInt();
+
+                auto dbResponse = commandHandler.dbHandler()->getChannelMembersFromID(QString::number(channelId));
+
+                QJsonDocument doc = QJsonDocument::fromJson(dbResponse->message().toUtf8());
+                if (!doc.isArray()) {
+                    qDebug() << "Error: Message is not a JSON array!";
+                    return;
+                }
+
+                qDebug() << "send to: " << dbResponse->message();
+                QJsonArray jsonArray = doc.array();
+
+                // Nachricht erstellen
+                QJsonObject sendToReceiverObj;
+                sendToReceiverObj["senderId"] = senderId;
+                sendToReceiverObj["message"] = message;
+                sendToReceiverObj["channelId"] = channelId;
+
+                QJsonDocument sendToReceiverJsonDoc(sendToReceiverObj);
+                std::string sendToReceiverPayload = QString(sendToReceiverJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+
+
+                for (const QJsonValue& value : jsonArray) {
+                    if (!value.isObject()) {
+                        continue; // Überspringe ungültige Einträge
+                    }
+
+                    QJsonObject obj = value.toObject();
+                    QString userIdStr = obj["user_id"].toString();
+
+                    if (userIdStr.isEmpty()) {
+                        qDebug() << "Error: user_id is missing or invalid!";
+                        continue;
+                    }
+
+                    int userId = userIdStr.toInt(); // Konvertiere zu int, falls erforderlich
+                    if(userId == senderId) {
+                        continue;
+                    }
+                    qDebug() << "try to send to: " << userId;
+                    // ServerWorker suchen und Nachricht senden
+                    for (ServerWorker* worker : _clients) {
+                        if (worker && worker->userID() == userId) { // Annahme: getUserId() gibt die User-ID zurück
+                            Protocol sendToReceiverProtocol(MessageType::MESSAGE_TRANSFER, "send_channel", sendToReceiverPayload);
+                            worker->sendData(sendToReceiverProtocol);
+                            qDebug() << "Message sent to user ID:" << userId;
+                            break; // Breche die innere Schleife ab, wenn der Worker gefunden wurde
+                        }
+                    }
+                }
+
+
+                std::string responsePayload;
+                commandHandler.dbHandler()->sendMessageToChannel(QString::number(channelId), QString::number(senderId), message);
+
+                QJsonObject responseObject;
+                responseObject["success"] = true; //dbResponse->success();
+                responseObject["message"] = "message saved"; //dbResponse->message();
+
+                QJsonDocument responseJsonDoc(responseObject);
+
+                try {
+                    std::string responsePayload = QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+                } catch (const std::exception& ex) {
+                    responsePayload = std::string("Error: ") + ex.what();
+                }
+
+                // Create a redsponse Protocol message
+                Protocol responseProtocol(MessageType::MESSAGE_TRANSFER, "send_channel_response", responsePayload);
+
+                // Send the response back to the client
+                sender->sendData(responseProtocol);
+            }
+        }
+
+        //emit logMessage(senderName + ": " + message);
         break;
     }
 

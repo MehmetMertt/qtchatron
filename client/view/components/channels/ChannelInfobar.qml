@@ -5,13 +5,22 @@ import QtQuick.Controls.Material
 import "../user"
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
+
+pragma ComponentBehavior: Bound
 
 Rectangle {
     id: channelInfobar
     width: 225
     color: "#232226" //bit darker dark
 
-    property list<User> memberList: ChannelModel.memberList
+    property list<User> memberList: ClientData.SessionUser.channelList[MainPageRouter.selectedPageID].memberList
+    property list<Thread> threadList: ClientData.SessionUser.channelList[MainPageRouter.selectedPageID].threadList
+
+    Component.onCompleted: {
+        console.log(MainPageRouter.selectedPageID)
+        console.log(threadList)
+    }
 
     //Border
     Rectangle {
@@ -61,6 +70,35 @@ Rectangle {
                     delegate: UserCard {
 
                     }
+                }
+            }
+
+            Text {
+                id: threadsTitle
+                text: qsTr("Threads:")
+                font.pixelSize: 18
+                color: Material.foreground
+                Layout.fillWidth: true
+            }
+
+            ScrollView {
+                id: threadsScrollView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                clip: true
+
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+
+                ListView {
+                    id: threadListView
+                    anchors.left: parent.left
+                    spacing: 5
+                    model: channelInfobar.threadList
+
+                    delegate: ThreadItem{}
                 }
             }
         }

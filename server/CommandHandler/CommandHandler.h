@@ -22,6 +22,8 @@ public:
 
     QString getCommandResponseName(const Command& command);
 
+    databaseHandler* dbHandler();
+
 private:
     databaseHandler *_dbHandler;
 

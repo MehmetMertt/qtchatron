@@ -2,6 +2,10 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
 
+import ClientObjects 1.0 as ClientData
+
+import "../user"
+
 Item {
     id: itemRoot
     width: parent ? parent.width : 0  // Match ListView width
@@ -15,7 +19,7 @@ Item {
     property int index: model.index
 
     // Determine if the sender is the current user (e.g., "michi")
-    property bool isCurrentUser: sender === "michi"
+    property bool isCurrentUser: sender === ClientData.SessionUser.user.username
 
     // Align message based on sender
 
@@ -27,13 +31,8 @@ Item {
         width: Math.min(messageText.implicitWidth + 24, (itemRoot ? itemRoot.width * 0.45 : 100))
 
         // User icon
-        Rectangle {
-            id: userIcon
-            width: 40
-            height: 40
-            radius: userIcon.width / 2
-            color: "blue"
-            anchors.top: parent.top
+        UserIcon {
+            initial: itemRoot.sender[0]
         }
 
         Column {

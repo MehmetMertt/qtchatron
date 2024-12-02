@@ -12,11 +12,11 @@ Rectangle {
     id: root
     color: "#252328"
 
-    property list<ChatMessageItem> chatList: MessageModel.messageList
-    property var messageModel: MessageModel
+    property list<ChatMessageItem> chatList: MainPageRouter.currentItem == MainPageRouter.CHAT ? ChatModel.receivingUser.messageList : MainPageRouter.currentItem == MainPageRouter.THREAD ? ThreadModel.currentThread.messageList : ChannelModel.channel.messageList
+    property var chatModel: MainPageRouter.currentItem == MainPageRouter.CHAT ? ChatModel : MainPageRouter.currentItem == MainPageRouter.THREAD ? ThreadModel : ChannelModel
 
     Connections{
-        target: root.messageModel
+        target: root.chatModel
         function onSendMessageSuccess() {
             messageField.text = ""
             chatListView.positionViewAtEnd();
@@ -44,12 +44,8 @@ Rectangle {
                 spacing: 8
 
                 onMovementEnded: {
-                    chatListView.returnToBounds();  // Stops the list immediately
+                    chatListView.returnToBounds();
                 }
-/*
-                highlightMoveDuration: 1000
-                highlightMoveVelocity: -1
-                */
 
                 highlightFollowsCurrentItem: true
 
@@ -170,7 +166,7 @@ Rectangle {
                             bottomBar.height = Math.min((lines-1)*20 + 80, 180);
                             //console.log(inputFieldContainer.height)
 
-                            root.messageModel.inputMessage = messageField.text
+                            root.chatModel.inputMessage = messageField.text
                         }
 
 
@@ -248,8 +244,8 @@ Rectangle {
                     if(!messageValid()) {
                         return;  // Don't send if the message is empty
                     }
-                    root.messageModel.inputMessage = trimmedMessage()
-                    root.messageModel.sendMessage()
+                    root.chatModel.inputMessage = trimmedMessage()
+                    root.chatModel.sendMessage()
                     messageField.text = ""
                 }
 

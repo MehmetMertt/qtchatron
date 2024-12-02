@@ -5,14 +5,14 @@ import Client 1.0
 import ClientObjects 1.0 as ClientData
 
 Rectangle {
-    id: userCard
+    id: threadCard
     height: 40
     radius: 5
     color: "transparent"
     width: parent.width
 
     required property var index
-    property User user: ClientData.SessionUser.channelList[MainPageRouter.selectedPageID].memberList[index]
+    property Thread thread: ClientData.SessionUser.channelList[MainPageRouter.selectedPageID].threadList[index]
 
 
     Rectangle {
@@ -32,18 +32,10 @@ Rectangle {
 
         anchors.leftMargin: 5
 
-        // User Icon (e.g., Avatar or Image)
-        UserIcon {
-            scaleI: 0.8
-            initial: userCard.user.getInitials()
-            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter  // Vertically center the icon
-            Layout.preferredHeight: 30
-            Layout.preferredWidth: 30
-        }
 
         // Text Label
         Text {
-            text: userCard.user.username  // Display the channel or user name
+            text: threadCard.thread.threadName  // Display the channel or user name
             color: "white"  // Text color
             font.pixelSize: 16  // Adjust font size as needed // Vertically center the text
         }
@@ -58,8 +50,8 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onClicked: {
-            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, userCard.user.username)
-            console.log("Channel clicked: " + userCard.user.username)
+            MainPageRouter.setCurrentItem(MainPageRouter.THREAD, threadCard.thread.threadName)
+            console.log("Channel clicked: " + threadCard.thread.threadName)
         }
 
         // Optionally handle hover effect if you want a different color on mouse enter/leave

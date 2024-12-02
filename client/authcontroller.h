@@ -14,7 +14,7 @@ public:
     void login(const QString &username, const QString &password,
                const std::function<void(bool, const QString &)> &callback);
 
-    void handleAuthResponseCallback(const bool success, const QString message);
+    void handleAuthResponseCallback(const bool success, const QString message, const int authLogin = 0);
 
     void signup(const QString &username, const QString &password,
                 const std::function<void(bool, const QString &)> &callback);
@@ -25,6 +25,7 @@ public:
 
 private:
     std::function<void(bool, const QString &)> _authCallback;
+    QString _username;
 };
 
 #endif // AUTHCONTROLLER_H

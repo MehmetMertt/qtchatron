@@ -3,9 +3,30 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
 
+import Client 1.0
+import ClientObjects 1.0 as ClientData
+
 Rectangle {
     id: channelPopupContent
     color: "transparent"
+
+    Connections {
+        target: ClientData.SessionUser
+        function onChannelPopupSuccess(channelName, channelID) {
+            console.log(channelName)
+            console.log(channelID)
+            MainPageRouter.setSelectedPageID(channelID)
+
+            ChannelModel.channel = ClientData.SessionUser.channelList[channelID]
+            console.log(ClientData.SessionUser.channelList[channelID].channelName)
+            MainPageRouter.closeNewChatPopup()
+            MainPageRouter.setCurrentItem(MainPageRouter.CHANNEL, channelName)
+        }
+
+        function onChatCreationFailure(message) {
+
+        }
+    }
 
     ColumnLayout {
         spacing: 5
@@ -139,10 +160,12 @@ Rectangle {
                     spacing: 10
                     ButtonGroup { id: visibilityButtonGroup }
                     CheckBox {
+                        id: privateButton
                         text: "Private Server"
                         ButtonGroup.group: visibilityButtonGroup
                     }
                     CheckBox {
+                        id: publicButton
                         text: "Public Server"
                         ButtonGroup.group: visibilityButtonGroup
                     }
@@ -151,10 +174,12 @@ Rectangle {
                     spacing: 10
                     ButtonGroup { id: channelTypeButtonGroup }
                     CheckBox {
+                        id: textTypeButton
                         text: "Text Channel"
                         ButtonGroup.group: channelTypeButtonGroup
                     }
                     CheckBox {
+                        id: voiceTypeButton
                         text: "Voice Channel"
                         ButtonGroup.group: channelTypeButtonGroup
                     }
@@ -194,10 +219,18 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: {
+                    var channelName = channelNameField.text;  // Get the channel name from the text field
+
+
                     if (tabBar.currentIndex === 0) {
+                        var secretKey = secretKeyField.text;      // Get the secret key (if any)
                         console.log("Join Channel with details entered")
+                        ClientData.SessionUser.processChannelJoin(channelName, secretKey)
                     } else {
+                        var isPrivate = visibilityButtonGroup.checkedButton === privateButton;
+                        var isTextChannel = channelTypeButtonGroup.checkedButton === textTypeButton;
                         console.log("Create Channel with details entered")
+                        ClientData.SessionUser.processChannelCreation(channelName, isTextChannel ? "text" : "voice", !isPrivate);
                     }
                 }
             }

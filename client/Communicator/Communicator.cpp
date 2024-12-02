@@ -119,31 +119,161 @@ void Communicator::onReadyRead()
 
 void Communicator::handleProtocolMessage(const Protocol& p)
 {
+    qDebug() << "wtf is happening";
     switch (p.getMsgType()) {
     case MessageType::MESSAGE_TRANSFER:
+        qDebug() << "wtf das ist scheise: " << p.getName();
+        if(p.getName() == "send_dm_response" || p.getName() == "send_channel_response") {
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                emit sendMessageResponse(success, message);
+            }
+        } else if(p.getName() == "send_dm") {
+            qDebug() << "got dm";
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                int senderId = jsonObject["senderId"].toInt(-1);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                qDebug() << "notify session user";
+                emit receivedMessageFromOtherUser(senderId, message);
+            } else {
+                qDebug() << "json parse Error";
+            }
+        } else if(p.getName() == "send_channel") {
+            qDebug() << "got channel message";
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                int senderId = jsonObject["senderId"].toInt(-1);
+                int channelId = jsonObject["channelId"].toInt(-1);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                qDebug() << "notify session user";
+                emit receivedMessageFromOtherUserInChannel(senderId, message, channelId);
+            } else {
+                qDebug() << "json parse Error";
+            }
+        }
         emit messageReceived(QString::fromStdString(p.getName()), QString::fromStdString(p.getPayload()));
         break;
     case MessageType::COMMAND_TRANSFER:
         // implement command_transfer
 
-        if(p.getName() == "auth_response") {
+        if(p.getName() == "login_response" || p.getName() == "signup_response") {
 
-            QString jsonQString = QString::fromStdString(p.getPayload());
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
 
-            // Konvertiere den QString in ein QJsonDocument
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+            if (!jsonObject.isEmpty()) {
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
 
-            // Überprüfen, ob das Dokument gültiges JSON enthält
-            if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-                QJsonObject jsonObject = jsonDoc.object();
+                emit authResponseReceived(success, message, p.getName() == "login_response");
+            }
+
+        } else if(p.getName() == "check_user_exists_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
 
                 // Zugriff auf die Werte
                 bool success = jsonObject["success"].toBool(false);
                 QString message = jsonObject["message"].toString("An unexpected error occured!");
 
-                emit authResponseReceived(success, message);
+                emit chatCreationResponse(success, message, message.toInt());
             }
+        } else if(p.getName() == "get_dmlist_by_userid_response") {
 
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                qDebug() << message;
+                emit getDmListResponse(success, message);
+            }
+        } else if(p.getName() == "get_chat_history_by_userid_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+                int receiverId = jsonObject["receiverId"].toString().toInt();
+
+                qDebug() << message;
+                emit getChatHistoryResponse(success, message, receiverId);
+            }
+        } else if(p.getName() == "create_channel_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+                QString invite = jsonObject["invite"].toString();
+
+                qDebug() << message;
+                emit createChannelResponse(success, message, invite);
+            }
+        } else if(p.getName() == "join_channel_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+                QString channelName = jsonObject["channelName"].toString();
+
+                qDebug() << channelName;
+                emit joinChannelResponse(success, message);
+            }
+        } else if(p.getName() == "get_channels_data_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+
+                qDebug() << message;
+                emit channelDataResponse(success, message);
+            }
+        } else if(p.getName() == "create_thread_response") {
+
+            QJsonObject jsonObject = parseJsonPayload(p.getPayload());
+
+            if (!jsonObject.isEmpty()) {
+
+                // Zugriff auf die Werte
+                bool success = jsonObject["success"].toBool(false);
+                QString message = jsonObject["message"].toString("An unexpected error occured!");
+                int channelID = jsonObject["channelID"].toString().toInt();
+
+                qDebug() << message;
+                emit threadCreationRespond(success, message, channelID);
+            }
         }
 
         emit logMessage("Command response received: " + QString::fromStdString(p.getPayload()));
@@ -156,6 +286,16 @@ void Communicator::handleProtocolMessage(const Protocol& p)
         emit logMessage("Unknown message type received.");
         break;
     }
+}
+
+QJsonObject Communicator::parseJsonPayload(const std::string& payload) {
+    QString jsonQString = QString::fromStdString(payload);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+    if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+        return jsonDoc.object(); // Return the parsed JSON object
+    }
+    return {}; // Return an empty QJsonObject if parsing fails
 }
 
 void Communicator::error(QAbstractSocket::SocketError socketError)

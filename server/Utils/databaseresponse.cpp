@@ -27,3 +27,13 @@ void DatabaseResponse::setMessage(const QString &newMessage)
 {
     _message = newMessage;
 }
+
+QString DatabaseResponse::extra() const
+{
+    return _extra;
+}
+
+void DatabaseResponse::setExtra(const QString &newExtra)
+{
+    _extra = newExtra;
+}

@@ -30,7 +30,17 @@ signals:
     void logMessage(const QString &message);
     void messageReceived(const QString &sender, const QString &message);
     void socketEncryptionSuccess();
-    void authResponseReceived(const bool success, const QString message);
+    void authResponseReceived(const bool success, const QString message, const int authLogin);
+    void chatCreationResponse(const bool success, const QString message, const int receiverUserId);
+    void sendMessageResponse(const bool success, const QString message);
+    void receivedMessageFromOtherUser(const int senderId, const QString message);
+    void receivedMessageFromOtherUserInChannel(const int senderId, const QString message, const int channelId);
+    void getDmListResponse(const bool success, const QString message);
+    void getChatHistoryResponse(const bool success, const QString message, const int receiverId);
+    void createChannelResponse(const bool success, const QString message, const QString invite);
+    void joinChannelResponse(const bool success, const QString message);
+    void channelDataResponse(const bool success, const QString message);
+    void threadCreationRespond(const bool success, const QString message, const int threadid);
 
 private slots:
     void onEncrypted();
@@ -42,6 +52,8 @@ private:
     Communicator(QObject *parent = nullptr);
     Communicator(const Communicator&) = delete; // Prevent copy constructor
     Communicator& operator=(const Communicator&) = delete; // Prevent copy assignment
+
+    QJsonObject parseJsonPayload(const std::string& payload);
 
     static Communicator* instance;
     static std::mutex mtx;

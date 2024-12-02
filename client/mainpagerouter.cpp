@@ -33,6 +33,10 @@ void MainPageRouter::setCurrentItem(MainPageRouter::MainArea newCurrentItem, QSt
             _topbarTitle = "Settings";
             _topbarType = "settings";
             break;
+        case THREAD:
+            _topbarTitle = newTitle != nullptr ? newTitle : "My Channel";
+            _topbarType = "channel";
+            break;
         }
 
         emit currentItemChanged();
@@ -79,6 +83,19 @@ bool MainPageRouter::showChannelInfo() const
 int MainPageRouter::selectedPageID() const
 {
     return _selectedPageID;
+}
+
+int MainPageRouter::selectedSubPageID() const
+{
+    return _selectedSubPageID;
+}
+
+void MainPageRouter::setSelectedSubPageID(int newSelectedSubPageID)
+{
+    if (_selectedSubPageID == newSelectedSubPageID)
+        return;
+    _selectedSubPageID = newSelectedSubPageID;
+    emit selectedSubPageIDChanged();
 }
 
 void MainPageRouter::setSelectedPageID(int newSelectedPageID)

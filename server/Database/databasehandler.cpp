@@ -96,6 +96,78 @@ QSharedPointer<DatabaseResponse> databaseHandler::getThreadMessagesByThreadID(co
     return dbr;
 }
 
+QSharedPointer<DatabaseResponse> databaseHandler::joinChannel(const QString& channelName, const QString& userId, const QString& inviteLink) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+
+    QString findChannelQuery = R"(
+        SELECT id, access_type, invite_link
+        FROM Channels
+        WHERE name = :channel_name;
+    )";
+
+    query.prepare(findChannelQuery);
+    query.bindValue(":channel_name", channelName);
+
+    if (!query.exec() || !query.next()) {
+        dbr->setMessage("Channel not found.");
+        return dbr;
+    }
+
+    QString channelId = query.value("id").toString();
+    QString accessType = query.value("access_type").toString();
+    QString channelInviteLink = query.value("invite_link").toString();
+
+    if (accessType == "private" && !inviteLink.isEmpty() && inviteLink != channelInviteLink) {
+        dbr->setMessage("Invalid invite link for this private channel.");
+        return dbr;
+    }
+
+    QSqlQuery checkMembershipQuery(db);
+    checkMembershipQuery.prepare(R"(
+        SELECT COUNT(*)
+        FROM ChannelUser
+        WHERE channel_id = :channel_id AND user_id = :user_id;
+    )");
+    checkMembershipQuery.bindValue(":channel_id", channelId);
+    checkMembershipQuery.bindValue(":user_id", userId);
+
+    if (!checkMembershipQuery.exec() || !checkMembershipQuery.next()) {
+        dbr->setMessage("An unexpected database error occurred while checking membership: " + checkMembershipQuery.lastError().text());
+        return dbr;
+    }
+
+    if (checkMembershipQuery.value(0).toInt() > 0) {
+        dbr->setMessage("User is already a member of this channel.");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QSqlQuery insertMembershipQuery(db);
+    insertMembershipQuery.prepare(R"(
+        INSERT INTO ChannelUser (channel_id, user_id)
+        VALUES (:channel_id, :user_id);
+    )");
+    insertMembershipQuery.bindValue(":channel_id", channelId);
+    insertMembershipQuery.bindValue(":user_id", userId);
+
+    if (!insertMembershipQuery.exec()) {
+        dbr->setMessage("An unexpected database error occurred while joining the channel: " + insertMembershipQuery.lastError().text());
+        return dbr;
+    }
+
+    dbr->setSuccess(true);
+    dbr->setMessage(channelId);
+    dbr->setExtra(channelName);
+    return dbr;
+}
 
 
 /**
@@ -243,6 +315,8 @@ QSharedPointer<DatabaseResponse> databaseHandler::createThread(const QString& ch
         return dbr;
     }
 
+    qDebug() << "user: " << userID << " channel: " << channelID;
+
     if(!isUserInChannel(userID, channelID)){
         dbr->setMessage("User is not member of channel");
         return dbr;
@@ -265,7 +339,8 @@ QSharedPointer<DatabaseResponse> databaseHandler::createThread(const QString& ch
     }
 
     if (query.numRowsAffected() > 0) {
-        dbr->setMessage("Thread successfully creeated.");
+        dbr->setMessage(query.lastInsertId().toString());
+        dbr->setExtra(channelID);
         dbr->setSuccess(true);
     } else {
         dbr->setMessage("Insertion succeeded, but no rows were affected.");
@@ -372,8 +447,8 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
 
     query.prepare(R"(
         INSERT INTO Channels
-        (name, type, access_type,invite_link,admin_id)
-        VALUES(:name, :type, :access_type,:link,:admin_id);
+        (name, type, access_type, invite_link, admin_id)
+        VALUES(:name, :type, :access_type, :invite_link, :admin_id);
     )");
 
 
@@ -384,10 +459,10 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
     query.bindValue(":access_type", access_type);
     if(!isPublic){
         invite = generateRandomString(6);
-        query.bindValue(":link",invite);
+        query.bindValue(":invite_link",invite);
 
     }else {
-        query.bindValue(":link", QVariant(QVariant::String)); //deprecated, but other options didint work
+        query.bindValue(":invite_link", QVariant());
     }
 
 
@@ -397,15 +472,12 @@ QSharedPointer<DatabaseResponse> databaseHandler::createChannel(const QString& n
     }
 
     if(!isPublic){
-        dbr->setMessage("invite:"+invite);
-    } else {
-        dbr->setMessage("channel created");
+        dbr->setExtra(invite);
     }
+    dbr->setMessage(query.lastInsertId().toString());
     dbr->setSuccess(true);
     return dbr;
 }
-
-
 
 
 /**
@@ -496,6 +568,52 @@ bool databaseHandler::isUserInChannel(const QString& userID, const QString& chan
 }
 
 
+QSharedPointer<DatabaseResponse> databaseHandler::getChannelMembersFromID(const QString& channelID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT user_id
+        FROM ChannelUser where channel_id = :channel_id;
+    )");
+    query.bindValue(":channel_id", channelID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        messageObject["user_id"] = query.value("user_id").toString();
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
+}
+
+
 /**
  * \brief Gets all Channls that the user is a member of
  *
@@ -515,8 +633,25 @@ QSharedPointer<DatabaseResponse> databaseHandler::getChannelsFromUser(const QStr
 
     QSqlQuery query(db);
     query.prepare(R"(
-        SELECT channel_id
-        FROM ChannelUser where user_id = :user_id;
+        SELECT
+            c.id AS channel_id,
+            c.name,
+            c.type,
+            c.admin_id,
+            c.invite_link,
+            GROUP_CONCAT(u.username || ':' || u.id) AS members
+        FROM
+            Channels c
+        JOIN
+            ChannelUser cu ON c.id = cu.channel_id
+        JOIN
+            Users u ON cu.user_id = u.id
+        WHERE
+            c.id IN (
+                SELECT channel_id FROM ChannelUser WHERE user_id = :user_id
+            )
+        GROUP BY
+            c.id;
     )");
     query.bindValue(":user_id", userID);
 
@@ -530,9 +665,21 @@ QSharedPointer<DatabaseResponse> databaseHandler::getChannelsFromUser(const QStr
     QJsonArray jsonArray; // Array to hold each message as a JSON object
 
     while (query.next()) {
+        QString channelId = query.value("channel_id").toString();
+        QString name = query.value("name").toString();
+        QString type = query.value("type").toString();
+        QString adminId = query.value("admin_id").toString();
+        QString inviteLink = query.value("invite_link").toString();
+        QString members = query.value("members").toString();
+
         QJsonObject messageObject;
         //   messageObject["chat_id"] = query.value("id").toString();
-        messageObject["channel_id"] = query.value("channel_id").toString();
+        messageObject["channel_id"] = channelId;
+        messageObject["channelName"] = name;
+        messageObject["channel_type"] = type;
+        messageObject["channel_admin"] = adminId;
+        messageObject["channel_invite"] = inviteLink;
+        messageObject["channel_members"] = members;
         jsonArray.append(messageObject);
     }
 
@@ -712,6 +859,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::getDirectMessagesBetweenUserBy
 
     dbr->setMessage(jsonString);
     dbr->setSuccess(true);
+    dbr->setExtra(userid2);
     return dbr;
 }
 
@@ -934,7 +1082,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(c
 
     QSqlQuery query(db);
     query.prepare(R"(
-        SELECT DISTINCT dm.id, u.username, dm.receiver_id
+        SELECT DISTINCT u.username, dm.receiver_id
         FROM DirectMessages dm
         JOIN Users u ON dm.receiver_id = u.id
         WHERE dm.sender_id = :user_id

@@ -20,6 +20,16 @@ void ServerWorker::disconnectFromClient()
     }
 }
 
+int ServerWorker::userID() const
+{
+    return _userID;
+}
+
+void ServerWorker::setUserID(int newUserID)
+{
+    _userID = newUserID;
+}
+
 
 void ServerWorker::sendData(const Protocol& p)
 {

@@ -13,6 +13,9 @@ public:
     explicit ServerWorker(QSslSocket *socket, QObject *parent = nullptr);
     void sendData(const Protocol& p);
     void receiveData();
+    int userID() const;
+    void setUserID(int newUserID);
+
 signals:
     void disconnectedFromClient();
     void error();
@@ -23,6 +26,7 @@ public slots:
 private slots:
 private:
     QSslSocket *_serverSocket;
+    int _userID;
 };
 
 #endif // SERVERWORKER_H

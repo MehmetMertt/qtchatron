@@ -4,40 +4,39 @@
 #include <QObject>
 #include <QtQml>
 
+#include <channel.h>
+#include <channelcontroller.h>
+
 class ChannelModel : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
-    Q_PROPERTY(QList<QObject *> memberList MEMBER _memberList NOTIFY memberListChanged FINAL)
-    Q_PROPERTY(QString channelName READ channelName WRITE setChannelName NOTIFY channelNameChanged FINAL)
-    Q_PROPERTY(int channelID READ channelID WRITE setChannelID NOTIFY channelIDChanged FINAL)
+    Q_PROPERTY(Channel *channel READ channel WRITE setChannel NOTIFY channelChanged FINAL)
+    Q_PROPERTY(QString inputMessage READ inputMessage WRITE setInputMessage NOTIFY inputMessageChanged FINAL)
 
 public:
     explicit ChannelModel(QObject *parent = nullptr);
-    explicit ChannelModel(QString name, QObject *parent = nullptr);
 
-    QList<QObject *> memberList() const;
-    void setMemberList(const QList<QObject *> &newMemberList);
+    Q_INVOKABLE void sendMessage();
+    Q_INVOKABLE void setChannel(Channel *newChannel);
 
+    Channel *channel() const;
 
-
-    QString channelName() const;
-    void setChannelName(const QString &newChannelName);
-
-    int channelID() const;
-    void setChannelID(int newChannelID);
+    QString inputMessage() const;
+    void setInputMessage(const QString &newInputMessage);
 
 private:
-    QList<QObject *> _memberList;
-    QString _channelName;
-    int _channelID;
+    QString _inputMessage;
+    Channel *_channel;
+
+    ChannelController *_channelController;
 
 
 signals:
-    void memberListChanged();
-    void channelNameChanged();
-    void channelIDChanged();
+    void channelChanged();
+    void inputMessageChanged();
+    void sendMessageSuccess();
 };
 
 #endif // CHANNELMODEL_H

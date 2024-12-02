@@ -15,9 +15,13 @@ public:
     QString message() const;
     void setMessage(const QString &newMessage);
 
+    QString extra() const;
+    void setExtra(const QString &newExtra);
+
 private:
     bool _success;
     QString _message;
+    QString _extra;
 signals:
 };
 

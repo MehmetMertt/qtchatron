@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 Rectangle {
     id: channelIcon
@@ -15,7 +16,12 @@ Rectangle {
     scale: 1
 
     required property var index
-    property ChannelModel channel: SessionUser.channelList[index]
+    property Channel channel: ClientData.SessionUser.channelList[index]
+
+    Component.onCompleted: {
+        console.log(channel.channelID)
+        console.log(ClientData.SessionUser.channelList.length)
+    }
 
     Connections {
         target: MainPageRouter
@@ -48,6 +54,8 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: {
+            ChannelModel.setChannel(channelIcon.channel)
+            MainPageRouter.setSelectedPageID(channelIcon.index)
             MainPageRouter.setCurrentItem(MainPageRouter.CHANNEL, channelIcon.channel.channelName)
             console.log("Channel clicked: " + channelIcon.channel.channelName)
         }

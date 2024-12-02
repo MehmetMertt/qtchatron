@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls.Material 2.15
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 import "../channels"
 
@@ -73,7 +74,7 @@ Rectangle {
             id: channelListView
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 10
-            model: SessionUser.channelList
+            model: ClientData.SessionUser.channelList
             delegate: ChannelIcon {}
         }
     }
@@ -155,7 +156,7 @@ Rectangle {
         border.width: 1
 
         Text {
-            text: SessionUser.user.getInitials()
+            text: ClientData.SessionUser.user.getInitials()
             color: userIconArea.containsMouse ? "#00A6E0" : "white"
             font.pixelSize: 28
             horizontalAlignment: Text.AlignHCenter
@@ -183,7 +184,7 @@ Rectangle {
             width: parent.width
             height: 50
             Text {
-                text: SessionUser.user.username
+                text: ClientData.SessionUser.user.username
                 font.pixelSize: 20
                 color: Material.foreground
                 leftPadding: 15

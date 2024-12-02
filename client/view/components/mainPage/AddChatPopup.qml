@@ -1,13 +1,32 @@
 import QtQuick 2.15
-import QtQuick.Controls
+import QtQuick.Controls 2.15
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
 
 import Client 1.0
+import ClientObjects 1.0 as ClientData
 
 Rectangle {
     id: chatPopupContent
     color: "transparent"
+
+    Connections {
+        target: ClientData.SessionUser
+        function onChatCreationSuccess(username, userID) {
+            console.log(username)
+            console.log(userID)
+            MainPageRouter.setSelectedPageID(userID)
+
+            ChatModel.receivingUser = ClientData.SessionUser.dmList[userID]
+            console.log(ClientData.SessionUser.dmList[userID].username)
+            MainPageRouter.closeNewChatPopup()
+            MainPageRouter.setCurrentItem(MainPageRouter.CHAT, username)
+        }
+
+        function onChatCreationFailure(message) {
+
+        }
+    }
 
     ColumnLayout {
         width: parent.width/2
@@ -94,7 +113,7 @@ Rectangle {
 
                     onClicked: {
                         console.log("Starting chat with: " + usernameField.text)
-                        MainPageRouter.closeNewChatPopup()
+                        ClientData.SessionUser.processChatCreation(usernameField.text)
                     }
                 }
             }
