@@ -88,10 +88,11 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
                 QString senderToken = jsonObject["senderToken"].toString();
                 int receiverId = jsonObject["receiverId"].toInt();
                 QString message = jsonObject["message"].toString();
+                int senderId = commandHandler.dbHandler()->getIDByToken(senderToken)->message().toInt();
 
                 QJsonObject sendToReceiverObj;
-                sendToReceiverObj["senderId"] = commandHandler.dbHandler()->getIDByToken(senderToken)->message().toInt(); //dbResponse->success();
-                sendToReceiverObj["message"] = message; //dbResponse->message();
+                sendToReceiverObj["senderId"] = senderId;
+                sendToReceiverObj["message"] = message;
 
                 QJsonDocument sendToReceiverJsonDoc(sendToReceiverObj);
 
@@ -107,8 +108,8 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
                         return; // Sobald der Worker gefunden wurde, beende die Suche
                     }
                 }
-
-                //commandHandler.dbHandler()->setMessage();
+                std::string responsePayload;
+                commandHandler.dbHandler()->sendMessageToUserID(QString::number(senderId), QString::number(receiverId), message);
 
                 QJsonObject responseObject;
                 responseObject["success"] = true; //dbResponse->success();
@@ -116,8 +117,11 @@ void Server::handleMessageReceived(ServerWorker* sender, const Protocol& p)
 
                 QJsonDocument responseJsonDoc(responseObject);
 
-                std::string responsePayload = QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
-
+                try {
+                    std::string responsePayload = QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+                } catch (const std::exception& ex) {
+                    responsePayload = std::string("Error: ") + ex.what();
+                }
 
                 // Create a redsponse Protocol message
                 Protocol responseProtocol(MessageType::MESSAGE_TRANSFER, "send_dm_response", responsePayload);

@@ -55,6 +55,7 @@ void AuthController::handleAuthResponseCallback(const bool success, const QStrin
         qDebug() << "setting new user";
         SessionUser::getInstance()->setUser(new User(_username));
         SessionUser::getInstance()->setToken(message);
+        SessionUser::getInstance()->loadData();
     }
 
     if (_authCallback) {

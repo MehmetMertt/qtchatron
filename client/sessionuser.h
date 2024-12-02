@@ -31,7 +31,8 @@ public:
     Q_INVOKABLE void processChatCreation(QString username);
 
     void handleChatCreationResponse(const bool success, const QString message, const int receiverUserId);
-    void handleReceivedMessageFromOtherUser(const int senderId, const QString message);
+
+    void loadData();
 
     Q_INVOKABLE User* getUserFromDmListByUsername(QString username);
     User* getUserFromDmListById(int userId);
@@ -60,6 +61,16 @@ private:
     QString _token;
 
     QString _chatCreationUsername;
+
+    QQueue<std::tuple<bool, QString, int>> _chatHistoryQueue; // Queue for handling messages
+    bool _isProcessingChatHistory = false; // Flag to prevent concurrent processing
+
+    void handleNextChatHistory();
+
+    void handleReceivedMessageFromOtherUser(const int senderId, const QString message);
+    void handleReceivedDmList(const bool success, const QString message);
+    void loadChatHistoryForAllUsers();
+    void handleReceivedChatHistory(const bool success, const QString& message, const int receiverId);
 
 signals:
     void dmListChanged();

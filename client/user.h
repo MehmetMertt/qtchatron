@@ -29,6 +29,7 @@ public:
     void setUserId(int newUserId);
 
     void addMessage(ChatMessageItem *newMessage);
+    void setMessageList(QList<QObject *> newMessageList);
 
 private:
     QString _username;

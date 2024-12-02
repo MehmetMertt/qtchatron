@@ -12,9 +12,47 @@ std::string CommandHandler::routeCommand(const Command& command)
     std::string params = command.params();
     qDebug() << "route command:" << QString::fromStdString(cmd);
 
-    if (cmd == "hello") {
-        // Respond with "hello"
-        response = "hello";
+    if (cmd == "get_dmlist_by_userid") {
+        QString token = QString::fromStdString(params);
+        QString userId = _dbHandler->getIDByToken(token)->message();
+
+        auto dbResponse = _dbHandler->getAllDirectMessagesByUserID(userId);
+
+        QJsonObject responseObject;
+        responseObject["success"] = dbResponse->success();
+        responseObject["message"] = dbResponse->message();
+
+        QJsonDocument responseJsonDoc(responseObject);
+
+        return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+    } else if (cmd == "get_chat_history_by_userid") {
+        QString jsonQString = QString::fromStdString(params);
+
+        // Konvertiere den QString in ein QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonQString.toUtf8());
+
+        // Überprüfen, ob das Dokument gültiges JSON enthält
+        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
+            QJsonObject jsonObject = jsonDoc.object();
+
+            // Zugriff auf die Werte
+            QString token = jsonObject["token"].toString();
+            QString receiverId = jsonObject["receiver_id"].toString();
+            QString userId = _dbHandler->getIDByToken(token)->message();
+
+            auto dbResponse = _dbHandler->getDirectMessagesBetweenUserByID(userId, receiverId);
+
+            QJsonObject responseObject;
+            responseObject["success"] = dbResponse->success();
+            responseObject["message"] = dbResponse->message();
+            responseObject["receiverId"] = dbResponse->extra();
+
+            qDebug() << dbResponse->message();
+
+            QJsonDocument responseJsonDoc(responseObject);
+
+            return QString(responseJsonDoc.toJson(QJsonDocument::Compact)).toStdString();
+        }
     }
     else if (cmd == "login_request" || cmd == "signup_request") {
         // Respond with request for username
@@ -47,7 +85,6 @@ std::string CommandHandler::routeCommand(const Command& command)
         } else {
             qWarning() << "Ungültiges JSON-Format!";
         }
-        response = "enter username";
     } else if(cmd == "check_user_exists") {
         QString username = QString::fromStdString(params);
 
@@ -80,7 +117,11 @@ QString CommandHandler::getCommandResponseName(const Command &command)
         return "signup_response";
     } else if(command.command() == "check_user_exists") {
         return "check_user_exists_response";
-    } else {
+    } else if(command.command() == "get_dmlist_by_userid") {
+        return "get_dmlist_by_userid_response";
+    } else if(command.command() == "get_chat_history_by_userid") {
+        return "get_chat_history_by_userid_response";
+    }else {
         return "unknown response";
     }
 }

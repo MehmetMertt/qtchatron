@@ -712,6 +712,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::getDirectMessagesBetweenUserBy
 
     dbr->setMessage(jsonString);
     dbr->setSuccess(true);
+    dbr->setExtra(userid2);
     return dbr;
 }
 
@@ -934,7 +935,7 @@ QSharedPointer<DatabaseResponse> databaseHandler::getAllDirectMessagesByUserID(c
 
     QSqlQuery query(db);
     query.prepare(R"(
-        SELECT DISTINCT dm.id, u.username, dm.receiver_id
+        SELECT DISTINCT u.username, dm.receiver_id
         FROM DirectMessages dm
         JOIN Users u ON dm.receiver_id = u.id
         WHERE dm.sender_id = :user_id

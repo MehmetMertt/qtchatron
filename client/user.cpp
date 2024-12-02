@@ -54,3 +54,9 @@ void User::addMessage(ChatMessageItem *newMessage)
     emit messageListChanged();
 }
 
+void User::setMessageList(QList<QObject *> newMessageList)
+{
+    _messageList = newMessageList;
+    emit messageListChanged();
+}
+

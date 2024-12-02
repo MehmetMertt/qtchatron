@@ -34,6 +34,8 @@ signals:
     void chatCreationResponse(const bool success, const QString message, const int receiverUserId);
     void sendMessageResponse(const bool success, const QString message);
     void receivedMessageFromOtherUser(const int senderId, const QString message);
+    void getDmListResponse(const bool success, const QString message);
+    void getChatHistoryResponse(const bool success, const QString message, const int receiverId);
 
 private slots:
     void onEncrypted();

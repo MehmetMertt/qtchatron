@@ -4,6 +4,7 @@
 
 #include "Communicator/Communicator.h"
 #include "Protocol/protocol.h"
+#include "chatmessageitem.h"
 
 SessionUser* SessionUser::instance = nullptr;
 std::mutex SessionUser::mtx;
@@ -74,6 +75,165 @@ void SessionUser::handleReceivedMessageFromOtherUser(const int senderId, const Q
     oss << std::put_time(&tm, "%d-%m-%Y %H-%M");
     QString timeString = QString::fromStdString(oss.str());
     sender->addMessage(new ChatMessageItem(sender->username(), message, timeString));
+}
+
+void SessionUser::handleReceivedDmList(const bool success, const QString message)
+{
+    qDebug() << "received dm list" << success << ": ";
+    qDebug() << message;
+
+    QByteArray byteArray = message.toUtf8();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(byteArray);
+
+    // Check if parsing was successful
+    if (!jsonDoc.isArray()) {
+        qWarning() << "Invalid JSON format!";
+        return;
+    }
+
+    // Step 2: Extract the QJsonArray
+    QJsonArray jsonArray = jsonDoc.array();
+
+    // Step 3: Iterate over the array and extract fields
+    for (const QJsonValue &value : jsonArray) {
+        if (value.isObject()) {
+            QJsonObject obj = value.toObject();
+            qDebug() << obj;
+            qDebug() << obj["receiver"].toString();
+            qDebug() << obj["username"].toString();
+            User* newUser = new User();
+            newUser->setUserId(obj["receiver"].toString().toInt());
+            newUser->setUsername(obj["username"].toString());
+
+
+            this->instance->_dmList.append(newUser);
+            qDebug() << "inserted";
+        }
+    }
+    this->instance->loadChatHistoryForAllUsers();
+    emit dmListChanged();
+
+}
+
+void SessionUser::loadData()
+{
+    auto *communicator = Communicator::getInstance();
+
+    connect(communicator, &Communicator::getDmListResponse, this, &SessionUser::handleReceivedDmList);
+
+    communicator->sendData(Protocol(COMMAND_TRANSFER, "get_dmlist_by_userid", this->instance->token().toStdString()));
+
+}
+
+void SessionUser::loadChatHistoryForAllUsers()
+{
+    auto* communicator = Communicator::getInstance();
+
+    // Connect the response signal to the handler for chat history
+    connect(communicator, &Communicator::getChatHistoryResponse, this, &SessionUser::handleReceivedChatHistory);
+
+    // Iterate over the _dmList and send a request for each user
+    for (QObject* userObj : this->instance->_dmList) {
+        User* user = qobject_cast<User*>(userObj);
+        if (user) {
+            QString receiverId = QString::number(user->userId());
+            qDebug() << "Requesting chat history for user with ID:" << receiverId;
+
+            QJsonObject payload;
+            payload["token"] = this->instance->token();
+            payload["receiver_id"] = receiverId;
+
+            // Convert the JSON object to a string
+            QString jsonString = QString::fromUtf8(QJsonDocument(payload).toJson(QJsonDocument::Compact));
+
+
+            // Send a request for chat history
+            communicator->sendData(Protocol(COMMAND_TRANSFER,
+                                            "get_chat_history_by_userid",
+                                            jsonString.toStdString()));
+        }
+    }
+}
+
+// Handler for the chat history response
+void SessionUser::handleReceivedChatHistory(const bool success, const QString& message, const int receiverId)
+{
+    // Add the chat history request to the queue
+    _chatHistoryQueue.enqueue(std::make_tuple(success, message, receiverId));
+
+    // Start processing if not already processing
+    if (!_isProcessingChatHistory) {
+        handleNextChatHistory();
+    }
+}
+
+void SessionUser::handleNextChatHistory()
+{
+    if (_chatHistoryQueue.isEmpty()) {
+        _isProcessingChatHistory = false;
+        return;
+    }
+
+    // Mark that we're processing
+    _isProcessingChatHistory = true;
+
+    // Get the next item from the queue
+    auto [success, message, receiverId] = _chatHistoryQueue.dequeue();
+
+    if (!success) {
+        qWarning() << "Failed to load chat history:" << message;
+        handleNextChatHistory();
+        return;
+    }
+
+    qDebug() << "Received chat history:" << message;
+
+    QByteArray byteArray = message.toUtf8();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(byteArray);
+    if (!jsonDoc.isArray()) {
+        qWarning() << "Invalid message JSON format!";
+        handleNextChatHistory();
+        return;
+    }
+
+    QJsonArray jsonArray = jsonDoc.array();
+    User* userForHistory;
+
+    qDebug() << receiverId;
+
+    for (QObject* userObj : this->instance->_dmList) {
+        User* user = qobject_cast<User*>(userObj);
+        if (user && user->userId() == receiverId) {
+            userForHistory = user;
+            qDebug() << "Chat history set for user with ID:" << receiverId;
+            break;
+        }
+    }
+
+    qDebug() << "get messages";
+
+    for (const QJsonValue &value : jsonArray) {
+        if (value.isObject()) {
+            QJsonObject messageObject = value.toObject();
+            QString content = messageObject["content"].toString();
+            QString receiverId = messageObject["receiver_id"].toString();
+            QString senderId = messageObject["sender_id"].toString();
+            QString timestamp = messageObject["timestamp"].toString();
+
+            QString username = "";
+            if(senderId == receiverId) {
+                username = userForHistory->username();
+            } else {
+                username = this->instance->user()->username();
+            }
+
+            ChatMessageItem *messageItem = new ChatMessageItem(username, content, timestamp, this);
+            userForHistory->addMessage(messageItem);
+        }
+    }
+
+    // After handling this chat history, process the next one
+    handleNextChatHistory();
 }
 
 User *SessionUser::getUserFromDmListByUsername(QString username)
