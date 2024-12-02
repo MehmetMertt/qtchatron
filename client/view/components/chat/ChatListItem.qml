@@ -4,6 +4,8 @@ import QtQuick.Controls.Material 2.15
 
 import ClientObjects 1.0 as ClientData
 
+import "../user"
+
 Item {
     id: itemRoot
     width: parent ? parent.width : 0  // Match ListView width
@@ -29,13 +31,7 @@ Item {
         width: Math.min(messageText.implicitWidth + 24, (itemRoot ? itemRoot.width * 0.45 : 100))
 
         // User icon
-        Rectangle {
-            id: userIcon
-            width: 40
-            height: 40
-            radius: userIcon.width / 2
-            color: "blue"
-            anchors.top: parent.top
+        UserIcon {
         }
 
         Column {
