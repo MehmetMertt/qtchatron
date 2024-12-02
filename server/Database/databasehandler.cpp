@@ -96,6 +96,77 @@ QSharedPointer<DatabaseResponse> databaseHandler::getThreadMessagesByThreadID(co
     return dbr;
 }
 
+QSharedPointer<DatabaseResponse> databaseHandler::joinChannel(const QString& channelName, const QString& userId, const QString& inviteLink = "") {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+
+    QString findChannelQuery = R"(
+        SELECT id, access_type, invite_link
+        FROM Channels
+        WHERE name = :channel_name;
+    )";
+
+    query.prepare(findChannelQuery);
+    query.bindValue(":channel_name", channelName);
+
+    if (!query.exec() || !query.next()) {
+        dbr->setMessage("Channel not found.");
+        return dbr;
+    }
+
+    QString channelId = query.value("id").toString();
+    QString accessType = query.value("access_type").toString();
+    QString channelInviteLink = query.value("invite_link").toString();
+
+    if (accessType == "private" && !inviteLink.isEmpty() && inviteLink != channelInviteLink) {
+        dbr->setMessage("Invalid invite link for this private channel.");
+        return dbr;
+    }
+
+    QSqlQuery checkMembershipQuery(db);
+    checkMembershipQuery.prepare(R"(
+        SELECT COUNT(*)
+        FROM ChannelUser
+        WHERE channel_id = :channel_id AND user_id = :user_id;
+    )");
+    checkMembershipQuery.bindValue(":channel_id", channelId);
+    checkMembershipQuery.bindValue(":user_id", userId);
+
+    if (!checkMembershipQuery.exec() || !checkMembershipQuery.next()) {
+        dbr->setMessage("An unexpected database error occurred while checking membership: " + checkMembershipQuery.lastError().text());
+        return dbr;
+    }
+
+    if (checkMembershipQuery.value(0).toInt() > 0) {
+        dbr->setMessage("User is already a member of this channel.");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QSqlQuery insertMembershipQuery(db);
+    insertMembershipQuery.prepare(R"(
+        INSERT INTO ChannelUser (channel_id, user_id)
+        VALUES (:channel_id, :user_id);
+    )");
+    insertMembershipQuery.bindValue(":channel_id", channelId);
+    insertMembershipQuery.bindValue(":user_id", userId);
+
+    if (!insertMembershipQuery.exec()) {
+        dbr->setMessage("An unexpected database error occurred while joining the channel: " + insertMembershipQuery.lastError().text());
+        return dbr;
+    }
+
+    dbr->setSuccess(true);
+    dbr->setMessage(channelId);
+    return dbr;
+}
 
 
 /**
@@ -538,6 +609,52 @@ bool databaseHandler::isUserInChannel(const QString& userID, const QString& chan
     }
 
     return false;
+}
+
+
+QSharedPointer<DatabaseResponse> databaseHandler::getChannelMembersFromID(const QString& channelID) {
+    QSqlDatabase db = getDatabase();
+    QSharedPointer<DatabaseResponse> dbr(new DatabaseResponse(false, ""));
+
+    if (!db.isOpen()) {
+        dbr->setMessage("Database is not open.");
+        return dbr;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(R"(
+        SELECT user_id
+        FROM ChannelUser where channel_id = :channel_id;
+    )");
+    query.bindValue(":channel_id", channelID);
+
+
+    if (!query.exec()) {
+        dbr->setMessage("An unexpected database error occurred: " + query.lastError().text());
+        return dbr;
+    }
+
+
+    QJsonArray jsonArray; // Array to hold each message as a JSON object
+
+    while (query.next()) {
+        QJsonObject messageObject;
+        messageObject["user_id"] = query.value("user_id").toString();
+        jsonArray.append(messageObject);
+    }
+
+    if (jsonArray.isEmpty()) {
+        dbr->setMessage("null");
+        dbr->setSuccess(false);
+        return dbr;
+    }
+
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Compact);
+
+    dbr->setMessage(jsonString);
+    dbr->setSuccess(true);
+    return dbr;
 }
 
 
